@@ -12,6 +12,8 @@ import addOngoing from "./addOngoing/index.js";
 
 import createOngoing from "./createOng/index.js";
 
+import ongDashboard from "./ongDashboard/index.js";
+
 const stage = new Scenes.Stage<Scenes.WizardContext>([
   shareAIO,
   reqAio,
@@ -19,6 +21,7 @@ const stage = new Scenes.Stage<Scenes.WizardContext>([
   myInvites,
   addOngoing,
   createOngoing,
+  ongDashboard,
 ]);
 
 // const shareStage = new Scenes.Stage<Scenes.SceneContext>([shareScene]);

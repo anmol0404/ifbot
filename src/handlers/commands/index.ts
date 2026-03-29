@@ -14,6 +14,11 @@ import premiumHandler from "./premium.js";
 import topInvitesHandler from "./topInvites.js";
 import inviteStatusHandler from "./inviteStatus.js";
 import createOngoingHandler from "./createOng.js";
+import ongHandler from "./ong.js";
+import autoHandler from "./auto.js";
+import postHandler from "./post.js";
+import cancelQueueHandler from "./cancelQueue.js";
+import transferOwnerHandler from "./transferOwner.js";
 
 export default {
   startHandler,
@@ -45,4 +50,10 @@ export default {
   totalUsersHandler,
 
   myBroadcastHandler,
+
+  ongHandler,
+  autoHandler,
+  postHandler,
+  cancelQueueHandler,
+  transferOwnerHandler,
 };

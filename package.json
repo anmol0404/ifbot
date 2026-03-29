@@ -24,6 +24,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.3.1",
     "telegraf": "^4.16.3",
+    "telegram": "^2.26.22",
     "winston": "^3.17.0"
   }
 }

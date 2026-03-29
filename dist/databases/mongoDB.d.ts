@@ -3,6 +3,8 @@ import { MessageDocument } from "./models/messageModel.js";
 import { UserDocument } from "./models/userModel.js";
 import { SortDocument } from "./interfaces/sort.js";
 import { AIODocument } from "./interfaces/aIO.js";
+import { OngChannel } from "./interfaces/ongChannel.js";
+import { OngEpisode } from "./interfaces/ongEpisode.js";
 import { AIOSearchCriteria } from "./interfaces/searchCriteria.js";
 import { InviteService } from "./inviteService.js";
 import { InviteUser } from "./interfaces/inviteUser.js";
@@ -76,6 +78,18 @@ declare class MongoDB {
         aioShortUrl: string;
     }, newActiveShareId: string): Promise<boolean>;
     deleteAllSortData(): Promise<boolean>;
+    createOngChannel(channel: Omit<OngChannel, "createdAt" | "updatedAt">): Promise<OngChannel>;
+    getActiveOngChannels(): Promise<OngChannel[]>;
+    getAllOngChannels(): Promise<OngChannel[]>;
+    getOngChannelByChannelId(channelId: number): Promise<OngChannel | null>;
+    updateOngChannel(channelId: number, update: Partial<OngChannel>): Promise<boolean>;
+    deleteOngChannel(channelId: number): Promise<boolean>;
+    incrementOngChannelEpisodes(channelId: number, count?: number): Promise<void>;
+    saveOngEpisode(episode: Omit<OngEpisode, "createdAt" | "updatedAt">): Promise<OngEpisode>;
+    getOngChannelStats(channelId: number): Promise<{
+        totalEpisodes: number;
+        lastPostedAt: Date | null;
+    }>;
 }
 declare const mongoDB: MongoDB;
 export default mongoDB;

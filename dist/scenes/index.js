@@ -5,6 +5,7 @@ import editAIO from "./editAIO/index.js";
 import myInvites from "./myInvites/index.js";
 import addOngoing from "./addOngoing/index.js";
 import createOngoing from "./createOng/index.js";
+import ongDashboard from "./ongDashboard/index.js";
 const stage = new Scenes.Stage([
     shareAIO,
     reqAio,
@@ -12,6 +13,7 @@ const stage = new Scenes.Stage([
     myInvites,
     addOngoing,
     createOngoing,
+    ongDashboard,
 ]);
 // const shareStage = new Scenes.Stage<Scenes.SceneContext>([shareScene]);
 export default stage;

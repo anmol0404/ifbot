@@ -7,6 +7,8 @@ import jwt from "jsonwebtoken";
 import AIOModel from "./models/aIOModel.js";
 import OngoingModel from "./models/ongoingModel.js";
 import { HindiDramaModel } from "./models/aIOModel.js";
+import OngChannelModel from "./models/ongChannelModel.js";
+import OngEpisodeModel from "./models/ongEpisodeModel.js";
 import { InviteService } from "./inviteService.js";
 import TokenModel from "./models/tokenModel.js";
 import { sendToLogGroup } from "../utils/sendToCollection.js";
@@ -549,6 +551,43 @@ class MongoDB {
             logger.error("Error deleting all sort data:", error);
             return false;
         }
+    }
+    // OngChannel CRUD
+    async createOngChannel(channel) {
+        const doc = await new OngChannelModel(channel).save();
+        return doc.toObject();
+    }
+    async getActiveOngChannels() {
+        return OngChannelModel.find({ status: "active" }).lean();
+    }
+    async getAllOngChannels() {
+        return OngChannelModel.find().sort({ createdAt: -1 }).lean();
+    }
+    async getOngChannelByChannelId(channelId) {
+        return OngChannelModel.findOne({ channelId }).lean();
+    }
+    async updateOngChannel(channelId, update) {
+        const result = await OngChannelModel.updateOne({ channelId }, { $set: update });
+        return result.modifiedCount > 0;
+    }
+    async deleteOngChannel(channelId) {
+        const result = await OngChannelModel.deleteOne({ channelId });
+        return result.deletedCount > 0;
+    }
+    async incrementOngChannelEpisodes(channelId, count = 1) {
+        await OngChannelModel.updateOne({ channelId }, { $inc: { totalEpisodes: count }, $set: { lastPostedAt: new Date() } });
+    }
+    // OngEpisode CRUD
+    async saveOngEpisode(episode) {
+        const doc = await new OngEpisodeModel(episode).save();
+        return doc.toObject();
+    }
+    async getOngChannelStats(channelId) {
+        const channel = await OngChannelModel.findOne({ channelId }).lean();
+        return {
+            totalEpisodes: channel?.totalEpisodes || 0,
+            lastPostedAt: channel?.lastPostedAt || null,
+        };
     }
 }
 const mongoDB = new MongoDB();

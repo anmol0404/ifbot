@@ -5,6 +5,8 @@ import { AIODocument } from "../databases/interfaces/aIO.js";
 import { SortDocument } from "../databases/interfaces/sort.js";
 import { InviteUser } from "../databases/interfaces/inviteUser.js";
 import { OngoingDocument } from "../databases/interfaces/ongoingDocument.js";
+import { OngChannel } from "../databases/interfaces/ongChannel.js";
+import { OngEpisode } from "../databases/interfaces/ongEpisode.js";
 declare class Database {
     client: DatabaseClient;
     constructor();
@@ -63,6 +65,18 @@ declare class Database {
         aioShortUrl: string;
     }, newActiveShareId: string): Promise<boolean>;
     deleteAllSortData(): Promise<boolean>;
+    createOngChannel(channel: Omit<OngChannel, "createdAt" | "updatedAt">): Promise<OngChannel>;
+    getActiveOngChannels(): Promise<OngChannel[]>;
+    getAllOngChannels(): Promise<OngChannel[]>;
+    getOngChannelByChannelId(channelId: number): Promise<OngChannel | null>;
+    updateOngChannel(channelId: number, update: Partial<OngChannel>): Promise<boolean>;
+    deleteOngChannel(channelId: number): Promise<boolean>;
+    incrementOngChannelEpisodes(channelId: number, count?: number): Promise<void>;
+    saveOngEpisode(episode: Omit<OngEpisode, "createdAt" | "updatedAt">): Promise<OngEpisode>;
+    getOngChannelStats(channelId: number): Promise<{
+        totalEpisodes: number;
+        lastPostedAt: Date | null;
+    }>;
 }
 declare class ReqDB {
     reqClient: RequestDBClient;

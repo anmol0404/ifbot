@@ -139,6 +139,35 @@ class Database {
     async deleteAllSortData() {
         return await this.client.deleteAllSortData();
     }
+    // OngChannel
+    async createOngChannel(channel) {
+        return this.client.createOngChannel(channel);
+    }
+    async getActiveOngChannels() {
+        return this.client.getActiveOngChannels();
+    }
+    async getAllOngChannels() {
+        return this.client.getAllOngChannels();
+    }
+    async getOngChannelByChannelId(channelId) {
+        return this.client.getOngChannelByChannelId(channelId);
+    }
+    async updateOngChannel(channelId, update) {
+        return this.client.updateOngChannel(channelId, update);
+    }
+    async deleteOngChannel(channelId) {
+        return this.client.deleteOngChannel(channelId);
+    }
+    async incrementOngChannelEpisodes(channelId, count) {
+        return this.client.incrementOngChannelEpisodes(channelId, count);
+    }
+    // OngEpisode
+    async saveOngEpisode(episode) {
+        return this.client.saveOngEpisode(episode);
+    }
+    async getOngChannelStats(channelId) {
+        return this.client.getOngChannelStats(channelId);
+    }
 }
 class ReqDB {
     reqClient;

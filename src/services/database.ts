@@ -8,6 +8,8 @@ import { AIODocument } from "../databases/interfaces/aIO.js";
 import { SortDocument } from "../databases/interfaces/sort.js";
 import { InviteUser } from "../databases/interfaces/inviteUser.js";
 import { OngoingDocument } from "../databases/interfaces/ongoingDocument.js";
+import { OngChannel } from "../databases/interfaces/ongChannel.js";
+import { OngEpisode } from "../databases/interfaces/ongEpisode.js";
 import { IUserDocument } from "../databases/models/inviteModel.js";
 
 class Database {
@@ -166,7 +168,37 @@ class Database {
   async deleteAllSortData(): Promise<boolean> {
     return await this.client.deleteAllSortData();
   }
-  //sort
+
+  // OngChannel
+  async createOngChannel(channel: Omit<OngChannel, "createdAt" | "updatedAt">): Promise<OngChannel> {
+    return this.client.createOngChannel(channel);
+  }
+  async getActiveOngChannels(): Promise<OngChannel[]> {
+    return this.client.getActiveOngChannels();
+  }
+  async getAllOngChannels(): Promise<OngChannel[]> {
+    return this.client.getAllOngChannels();
+  }
+  async getOngChannelByChannelId(channelId: number): Promise<OngChannel | null> {
+    return this.client.getOngChannelByChannelId(channelId);
+  }
+  async updateOngChannel(channelId: number, update: Partial<OngChannel>): Promise<boolean> {
+    return this.client.updateOngChannel(channelId, update);
+  }
+  async deleteOngChannel(channelId: number): Promise<boolean> {
+    return this.client.deleteOngChannel(channelId);
+  }
+  async incrementOngChannelEpisodes(channelId: number, count?: number): Promise<void> {
+    return this.client.incrementOngChannelEpisodes(channelId, count);
+  }
+
+  // OngEpisode
+  async saveOngEpisode(episode: Omit<OngEpisode, "createdAt" | "updatedAt">): Promise<OngEpisode> {
+    return this.client.saveOngEpisode(episode);
+  }
+  async getOngChannelStats(channelId: number): Promise<{ totalEpisodes: number; lastPostedAt: Date | null }> {
+    return this.client.getOngChannelStats(channelId);
+  }
 }
 
 class ReqDB {

@@ -39,5 +39,14 @@ declare const _default: {
     otherDomain: string;
     botSupportLink: string | undefined;
     upiId: string;
+    aiServerUrl: string;
+    aiModel: string;
+    aiApiKey: string;
+    autoPostDelayMs: number;
+    aiMatchConfidenceThreshold: number;
+    sessionId: string;
+    apiId: number;
+    apiHash: string;
+    twoFaPassword: string;
 };
 export default _default;

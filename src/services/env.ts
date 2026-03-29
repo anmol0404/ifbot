@@ -39,6 +39,19 @@ const howToGenerateToken = env.HOW_TO_GENERATE_TOKEN;
 const botSupportLink = env.BOT_SUPPORT_LINK;
 const premiumPlansLink = env.PREMIUM_PLANS_LINK;
 
+// GramJS (User API) Configuration
+const sessionId = env.SESSION_ID || "";
+const apiId = Number(env.API_ID) || 0;
+const apiHash = env.API_HASH || "";
+const twoFaPassword = env.TWO_FA_PASSWORD || "";
+
+// AI Configuration
+const aiServerUrl = env.AI_SERVER_URL || "http://31.97.229.2:3010";
+const aiModel = env.AI_MODEL || "grok-code";
+const aiApiKey = env.AI_API_KEY || "";
+const autoPostDelayMs = Number(env.AUTO_POST_DELAY_MS) || 10000;
+const aiMatchConfidenceThreshold = Number(env.AI_MATCH_CONFIDENCE_THRESHOLD) || 70;
+
 const apiBaseUrl = env.API_BASE_URL || "";
 const apiFetchToken = env.API_FETCH_TOKEN || "";
 //payment
@@ -91,4 +104,13 @@ export default {
   otherDomain,
   botSupportLink,
   upiId,
+  aiServerUrl,
+  aiModel,
+  aiApiKey,
+  autoPostDelayMs,
+  aiMatchConfidenceThreshold,
+  sessionId,
+  apiId,
+  apiHash,
+  twoFaPassword,
 };
