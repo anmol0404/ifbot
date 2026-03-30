@@ -18,6 +18,7 @@ import autoHandler from "./auto.js";
 import postHandler from "./post.js";
 import cancelQueueHandler from "./cancelQueue.js";
 import transferOwnerHandler from "./transferOwner.js";
+import ongoingBrowseHandler from "./ongoingBrowse.js";
 export default {
     startHandler,
     createOngoingHandler,
@@ -39,4 +40,5 @@ export default {
     postHandler,
     cancelQueueHandler,
     transferOwnerHandler,
+    ongoingBrowseHandler,
 };

@@ -50,6 +50,7 @@ app.command("auto", commands.autoHandler);
 app.command("post", commands.postHandler);
 app.command("cancelqueue", commands.cancelQueueHandler);
 app.command("transferowner", commands.transferOwnerHandler);
+app.command("ongoing", commands.ongoingBrowseHandler);
 app.command("topinviters", commands.topInvitesHandler);
 app.command("myinvitestatus", commands.inviteStatusHandler);
 

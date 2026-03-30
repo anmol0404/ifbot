@@ -3,162 +3,119 @@ import database from "../../services/database.js";
 import env from "../../services/env.js";
 import { makeAIOCaption } from "../../utils/caption/makeCaption.js";
 import getRandomId from "../../extra/getRandomId.js";
-import { sendCallbackQueryResponse } from "./answerCbQUery.js";
-import { makeButtons } from "../../utils/markupButton/permanantButton/keyboard.js";
+import { buildAIOPaginationKeyboard } from "../../utils/pagination.js";
 import { reservedWordList } from "../../utils/markupButton/permanantButton/lists.js";
 import { cleanString } from "./cleanReq.js";
 import logger from "../../utils/logger.js";
-// Create a Wizard Scene
+function getDownloadLink(data, hindi) {
+    const lang = hindi ? "hindi" : "eng";
+    return `https://t.me/${env.botUserName}?start=${data.shareId}-${lang}`;
+}
 const paginationWizard = new Scenes.WizardScene("reqAio", Composer.on("message", async (ctx) => {
-    if ("text" in ctx.message) {
-        ctx.session.page = 0;
-        ctx.session.hindi = false;
-        let request = ctx.message.text.trim();
-        let finalResult;
-        let searchCriteria;
-        if (request.startsWith("/h") || ctx.chat?.id === -1002180074673) {
-            ctx.session.hindi = true;
-            request = request.replace("/h", "").trim();
-            searchCriteria = {
-                aIOTitle: cleanString(request.toLocaleLowerCase()),
-            };
-            finalResult = await database.searchHindiDrama(searchCriteria);
+    if (!("text" in ctx.message))
+        return;
+    const session = ctx.session;
+    session.page = 0;
+    session.hindi = false;
+    let request = ctx.message.text.trim();
+    let finalResult;
+    if (request.startsWith("/h") || ctx.chat?.id === -1002180074673) {
+        session.hindi = true;
+        request = request.replace("/h", "").trim();
+        const searchCriteria = {
+            aIOTitle: cleanString(request.toLocaleLowerCase()),
+        };
+        finalResult = await database.searchHindiDrama(searchCriteria);
+    }
+    else {
+        request = request.replace("/s", "").trim();
+        const searchCriteria = {
+            aIOTitle: cleanString(request.toLocaleLowerCase()),
+        };
+        finalResult = await database.searchAIO(searchCriteria);
+    }
+    if (reservedWordList.includes(request.toLowerCase()) || request.length <= 2) {
+        return ctx.scene.leave();
+    }
+    const random = getRandomId();
+    session.prev = `prev${random}`;
+    session.next = `next${random}`;
+    session.aIOData = finalResult;
+    if (!finalResult || finalResult.length === 0) {
+        return ctx.scene.leave();
+    }
+    const link = getDownloadLink(finalResult[0], session.hindi || false);
+    const keyboard = buildAIOPaginationKeyboard(0, finalResult.length, session.prev, session.next, link);
+    try {
+        const sent = await ctx.replyWithPhoto(finalResult[0].aIOPosterID, {
+            caption: `\`\`\`\n${makeAIOCaption(finalResult[0])}\n\`\`\``,
+            reply_markup: keyboard,
+            reply_parameters: { message_id: ctx.message.message_id },
+            parse_mode: "MarkdownV2",
+        });
+        setTimeout(() => ctx.deleteMessage(sent.message_id).catch(() => { }), 5 * 60 * 1000);
+    }
+    catch (error) {
+        logger.error("Error replying with photo:", error);
+    }
+    if (finalResult.length > 1) {
+        return ctx.wizard.next();
+    }
+    return ctx.scene.leave();
+}), Composer.on("callback_query", async (ctx) => {
+    if (!("data" in ctx.callbackQuery))
+        return;
+    const session = ctx.session;
+    const data = ctx.callbackQuery.data;
+    if (data === "noop") {
+        await ctx.answerCbQuery();
+        return;
+    }
+    const aIOData = session.aIOData;
+    if (!aIOData || aIOData.length === 0) {
+        await ctx.answerCbQuery("No data. Search again.");
+        return;
+    }
+    const page = session.page || 0;
+    let newPage = page;
+    if (data === session.next) {
+        if (page + 1 < aIOData.length) {
+            newPage = page + 1;
         }
         else {
-            request = request.replace("/s", "").trim();
-            searchCriteria = {
-                aIOTitle: cleanString(request.toLocaleLowerCase()),
-            };
-            finalResult = await database.searchAIO(searchCriteria);
-        }
-        if (!reservedWordList.includes(request.toLowerCase()) && request.length > 2) {
-            const searchCriteria = {
-                aIOTitle: cleanString(request.toLocaleLowerCase()),
-            };
-            const random = getRandomId();
-            ctx.session.prev = `prev${random}`;
-            ctx.session.next = `next${random}`;
-            logger.debug("Previous page data:", ctx.session.prev);
-            ctx.session.aIOData = finalResult;
-            if (finalResult && finalResult.length > 0) {
-                const photo = finalResult[0].aIOPosterID;
-                let link;
-                if (!ctx.session.hindi) {
-                    link = `https://t.me/${env.botUserName}?start=${finalResult[0].shareId}-eng`;
-                }
-                else if (ctx.session.hindi) {
-                    link = `https://t.me/${env.botUserName}?start=${finalResult[0].shareId}-hindi`;
-                }
-                else {
-                    link = `https://t.me/${env.botUserName}?start=${finalResult[0].shareId}-eng`;
-                }
-                try {
-                    await ctx
-                        .replyWithPhoto(photo, {
-                        caption: `\`\`\`\n${makeAIOCaption(finalResult[0])}\n\`\`\``,
-                        reply_markup: makeButtons(link, ctx.session.next || "", ctx.session.prev || ""),
-                        reply_parameters: {
-                            message_id: ctx.message.message_id,
-                        },
-                        parse_mode: "MarkdownV2",
-                    })
-                        .then((sentMessage) => {
-                        const messageIdToDelete = sentMessage.message_id;
-                        setTimeout(() => {
-                            ctx.deleteMessage(messageIdToDelete);
-                        }, 5 * 60 * 1000);
-                    });
-                }
-                catch (error) {
-                    logger.error("Error replying with photo:", error);
-                }
-                if (finalResult.length > 1) {
-                    return ctx.wizard.next();
-                }
-            }
-            else {
-                ctx.scene.leave;
-            }
-            return ctx.wizard.next();
-        }
-        else {
-            await ctx.scene.leave();
+            await ctx.answerCbQuery("This is the last one!");
+            return;
         }
     }
-}), Composer.on("callback_query", async (ctx) => {
-    if ("data" in ctx.callbackQuery &&
-        (ctx.session.next === ctx.callbackQuery.data ||
-            ctx.session.prev === ctx.callbackQuery.data)) {
-        const page = ctx.session.page || 0;
-        const aIOData = ctx.session.aIOData;
-        logger.debug("Current page and AIO data length:", ctx.session.page || 0, ctx.session.aIOData?.length);
-        if (aIOData) {
-            try {
-                if (ctx.callbackQuery.data.startsWith("next")) {
-                    if (page + 1 < aIOData.length) {
-                        ctx.session.page =
-                            (ctx.session.page ?? 0) + 1;
-                        logger.debug("Page and AIO data length (next):");
-                        const photo = aIOData[ctx.session.page || 0].aIOPosterID;
-                        //edit
-                        await ctx.editMessageMedia({
-                            type: "photo",
-                            media: photo,
-                        });
-                        let link;
-                        if (aIOData[page + 1].aioShortUrl === "null") {
-                            link = `https://t.me/${env.botUserName}?start=${aIOData[page + 1].shareId}-eng`;
-                        }
-                        else {
-                            // link = aIOData[page + 1].aioShortUrl;
-                            link = `https://t.me/${env.botUserName}?start=${aIOData[page + 1].shareId}-eng`;
-                        }
-                        await ctx.editMessageCaption(`\`\`\`\n${makeAIOCaption(aIOData[page + 1])}\n\`\`\``, {
-                            reply_markup: makeButtons(link, ctx.session.next || "", ctx.session.prev || ""),
-                            parse_mode: "MarkdownV2",
-                        });
-                    }
-                    else {
-                        await sendCallbackQueryResponse(ctx, `This is the last no more there !! `);
-                    }
-                }
-                else if (ctx.callbackQuery.data.startsWith("prev")) {
-                    if (aIOData && page != 0) {
-                        //ignore this page != 0
-                        ctx.session.page = Math.max((ctx.session.page ?? 0) - 1, 0);
-                        const photo = aIOData[page - 1].aIOPosterID;
-                        let link;
-                        if (aIOData[page - 1].aioShortUrl === "null") {
-                            link = `https://t.me/${env.botUserName}?start=${aIOData[page - 1].shareId}-eng`;
-                        }
-                        else {
-                            // link = aIOData[page - 1].aioShortUrl;
-                            link = `https://t.me/${env.botUserName}?start=${aIOData[page - 1].shareId}-eng`;
-                        }
-                        await ctx.editMessageMedia({
-                            type: "photo",
-                            media: photo,
-                        });
-                        await ctx.editMessageCaption(`\`\`\`\n ${makeAIOCaption(aIOData[page - 1])}\n\`\`\``, {
-                            reply_markup: makeButtons(link, ctx.session.next || "", ctx.session.prev || ""),
-                            parse_mode: "MarkdownV2",
-                        });
-                    }
-                    else {
-                        await sendCallbackQueryResponse(ctx, `Nothing in Prev !! `);
-                    }
-                }
-            }
-            catch (error) {
-                logger.error("Error handling pagination callback:", error);
-            }
+    else if (data === session.prev) {
+        if (page > 0) {
+            newPage = page - 1;
         }
         else {
-            await sendCallbackQueryResponse(ctx, `No more data there !!!`);
+            await ctx.answerCbQuery("Already on the first one!");
+            return;
         }
     }
     else {
-        await sendCallbackQueryResponse(ctx, `you need to search again this  !!!`);
+        await ctx.answerCbQuery("Search expired. Try again.");
+        return;
+    }
+    session.page = newPage;
+    const item = aIOData[newPage];
+    const link = getDownloadLink(item, session.hindi || false);
+    const keyboard = buildAIOPaginationKeyboard(newPage, aIOData.length, session.prev || "", session.next || "", link);
+    try {
+        await ctx.answerCbQuery();
+        await ctx.editMessageMedia({
+            type: "photo",
+            media: item.aIOPosterID,
+            caption: `\`\`\`\n${makeAIOCaption(item)}\n\`\`\``,
+            parse_mode: "MarkdownV2",
+        });
+        await ctx.editMessageReplyMarkup(keyboard);
+    }
+    catch (error) {
+        logger.error("Error handling pagination callback:", error);
     }
 }));
 export default paginationWizard;

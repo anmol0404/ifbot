@@ -6,6 +6,7 @@ import myInvites from "./myInvites/index.js";
 import addOngoing from "./addOngoing/index.js";
 import createOngoing from "./createOng/index.js";
 import ongDashboard from "./ongDashboard/index.js";
+import ongoingBrowse from "./ongoingBrowse/index.js";
 const stage = new Scenes.Stage([
     shareAIO,
     reqAio,
@@ -14,6 +15,7 @@ const stage = new Scenes.Stage([
     addOngoing,
     createOngoing,
     ongDashboard,
+    ongoingBrowse,
 ]);
 // const shareStage = new Scenes.Stage<Scenes.SceneContext>([shareScene]);
 export default stage;

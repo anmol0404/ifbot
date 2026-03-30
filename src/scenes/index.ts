@@ -14,6 +14,8 @@ import createOngoing from "./createOng/index.js";
 
 import ongDashboard from "./ongDashboard/index.js";
 
+import ongoingBrowse from "./ongoingBrowse/index.js";
+
 const stage = new Scenes.Stage<Scenes.WizardContext>([
   shareAIO,
   reqAio,
@@ -22,6 +24,7 @@ const stage = new Scenes.Stage<Scenes.WizardContext>([
   addOngoing,
   createOngoing,
   ongDashboard,
+  ongoingBrowse,
 ]);
 
 // const shareStage = new Scenes.Stage<Scenes.SceneContext>([shareScene]);
