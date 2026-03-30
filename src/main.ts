@@ -10,6 +10,7 @@ import { fileReceiverMiddleware, initFileReceiver, handleUnmatchedCallback, hand
 import { handleTransferOwnerText } from "./handlers/commands/transferOwner.js";
 import { useNewReplies } from "telegraf/future";
 import { initializeAIProviders } from "./lib/ai/index.js";
+import { loadConfigFromDB } from "./services/env.js";
 import logger from "./utils/logger.js";
 import gramClient from "./services/gramClient.js";
 
@@ -53,6 +54,7 @@ app.command("transferowner", commands.transferOwnerHandler);
 app.command("ongoing", commands.ongoingBrowseHandler);
 app.command("topinviters", commands.topInvitesHandler);
 app.command("myinvitestatus", commands.inviteStatusHandler);
+app.command("config", commands.configHandler);
 
 app.catch(async (err, ctx) => {
   logger.error(`Error in ${ctx.updateType}`, err);
@@ -61,6 +63,7 @@ const interval = 10 * 60 * 1000;
 
 async function main() {
   await database.initialize();
+  await loadConfigFromDB();
   await telegram.initialize();
   initializeAIProviders({
     serverUrl: env.aiServerUrl,

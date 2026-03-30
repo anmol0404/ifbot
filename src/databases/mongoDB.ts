@@ -11,10 +11,12 @@ import OngoingModel from "./models/ongoingModel.js";
 import { HindiDramaModel } from "./models/aIOModel.js";
 import OngChannelModel from "./models/ongChannelModel.js";
 import OngEpisodeModel from "./models/ongEpisodeModel.js";
+import ConfigVarModel from "./models/configVarModel.js";
 
 import { AIODocument } from "./interfaces/aIO.js";
 import { OngChannel } from "./interfaces/ongChannel.js";
 import { OngEpisode } from "./interfaces/ongEpisode.js";
+import { IConfigVar } from "./interfaces/configVar.js";
 
 import { AIOSearchCriteria } from "./interfaces/searchCriteria.js";
 import { InviteService } from "./inviteService.js";
@@ -686,6 +688,28 @@ class MongoDB {
       totalEpisodes: channel?.totalEpisodes || 0,
       lastPostedAt: channel?.lastPostedAt || null,
     };
+  }
+
+  // ConfigVar CRUD
+  async getAllConfigVars(): Promise<IConfigVar[]> {
+    return ConfigVarModel.find().lean();
+  }
+
+  async getConfigVar(key: string): Promise<IConfigVar | null> {
+    return ConfigVarModel.findOne({ key }).lean();
+  }
+
+  async upsertConfigVar(key: string, encryptedValue: string, category: string, updatedBy: number): Promise<void> {
+    await ConfigVarModel.findOneAndUpdate(
+      { key },
+      { encryptedValue, category, updatedBy, updatedAt: new Date() },
+      { upsert: true }
+    );
+  }
+
+  async deleteConfigVar(key: string): Promise<boolean> {
+    const result = await ConfigVarModel.deleteOne({ key });
+    return result.deletedCount > 0;
   }
 }
 

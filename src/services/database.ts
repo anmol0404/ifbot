@@ -10,6 +10,7 @@ import { InviteUser } from "../databases/interfaces/inviteUser.js";
 import { OngoingDocument } from "../databases/interfaces/ongoingDocument.js";
 import { OngChannel } from "../databases/interfaces/ongChannel.js";
 import { OngEpisode } from "../databases/interfaces/ongEpisode.js";
+import { IConfigVar } from "../databases/interfaces/configVar.js";
 import { IUserDocument } from "../databases/models/inviteModel.js";
 
 class Database {
@@ -198,6 +199,20 @@ class Database {
   }
   async getOngChannelStats(channelId: number): Promise<{ totalEpisodes: number; lastPostedAt: Date | null }> {
     return this.client.getOngChannelStats(channelId);
+  }
+
+  // ConfigVar
+  async getAllConfigVars(): Promise<IConfigVar[]> {
+    return this.client.getAllConfigVars();
+  }
+  async getConfigVar(key: string): Promise<IConfigVar | null> {
+    return this.client.getConfigVar(key);
+  }
+  async upsertConfigVar(key: string, encryptedValue: string, category: string, updatedBy: number): Promise<void> {
+    return this.client.upsertConfigVar(key, encryptedValue, category, updatedBy);
+  }
+  async deleteConfigVar(key: string): Promise<boolean> {
+    return this.client.deleteConfigVar(key);
   }
 }
 

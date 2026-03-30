@@ -8,6 +8,7 @@ import { InviteUser } from "./databases/interfaces/inviteUser.js";
 import { OngoingDocument } from "./databases/interfaces/ongoingDocument.js";
 import { OngChannel } from "./databases/interfaces/ongChannel.js";
 import { OngEpisode } from "./databases/interfaces/ongEpisode.js";
+import { IConfigVar } from "./databases/interfaces/configVar.js";
 import { IUserDocument } from "./databases/models/inviteModel.js";
 
 export type CommandContext = NarrowedContext<
@@ -96,6 +97,12 @@ export interface DatabaseClient {
   // OngEpisode
   saveOngEpisode(episode: Omit<OngEpisode, "createdAt" | "updatedAt">): Promise<OngEpisode>;
   getOngChannelStats(channelId: number): Promise<{ totalEpisodes: number; lastPostedAt: Date | null }>;
+
+  // ConfigVar
+  getAllConfigVars(): Promise<IConfigVar[]>;
+  getConfigVar(key: string): Promise<IConfigVar | null>;
+  upsertConfigVar(key: string, encryptedValue: string, category: string, updatedBy: number): Promise<void>;
+  deleteConfigVar(key: string): Promise<boolean>;
 }
 
 export interface RequestDBClient {

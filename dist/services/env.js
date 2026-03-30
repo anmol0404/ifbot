@@ -57,7 +57,7 @@ if (!token) {
 if (!adminIds) {
     throw Error("Provide ADMIN_IDS");
 }
-export default {
+const envObj = {
     baseUrl,
     premium,
     apiBaseUrl,
@@ -107,3 +107,44 @@ export default {
     apiHash,
     twoFaPassword,
 };
+export async function loadConfigFromDB() {
+    const { default: ConfigVarModel } = await import("../databases/models/configVarModel.js");
+    const { decrypt } = await import("./encryption.js");
+    const { CONFIG_VARS } = await import("./configRegistry.js");
+    const logger = (await import("../utils/logger.js")).default;
+    try {
+        const docs = await ConfigVarModel.find().lean();
+        if (docs.length === 0)
+            return;
+        for (const doc of docs) {
+            const def = CONFIG_VARS.find((v) => v.envKey === doc.key);
+            if (!def)
+                continue;
+            try {
+                const rawValue = decrypt(doc.encryptedValue);
+                let parsed;
+                switch (def.type) {
+                    case "number[]":
+                        parsed = rawValue.split(" ").map(Number).filter((n) => !isNaN(n));
+                        break;
+                    case "number":
+                        parsed = Number(rawValue);
+                        if (isNaN(parsed))
+                            parsed = 0;
+                        break;
+                    default:
+                        parsed = rawValue;
+                }
+                envObj[def.envObjKey] = parsed;
+            }
+            catch (err) {
+                logger.error(`Failed to decrypt config var ${doc.key}:`, err);
+            }
+        }
+        logger.info(`Loaded ${docs.length} config var(s) from DB`);
+    }
+    catch (err) {
+        logger.error("Failed to load config from DB:", err);
+    }
+}
+export default envObj;

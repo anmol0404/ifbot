@@ -1,5 +1,5 @@
 import "dotenv/config";
-declare const _default: {
+declare const envObj: {
     baseUrl: string;
     premium: string | undefined;
     apiBaseUrl: string;
@@ -49,4 +49,5 @@ declare const _default: {
     apiHash: string;
     twoFaPassword: string;
 };
-export default _default;
+export declare function loadConfigFromDB(): Promise<void>;
+export default envObj;

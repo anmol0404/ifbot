@@ -7,6 +7,7 @@ import addOngoing from "./addOngoing/index.js";
 import createOngoing from "./createOng/index.js";
 import ongDashboard from "./ongDashboard/index.js";
 import ongoingBrowse from "./ongoingBrowse/index.js";
+import configDashboard from "./configDashboard/index.js";
 const stage = new Scenes.Stage([
     shareAIO,
     reqAio,
@@ -16,6 +17,7 @@ const stage = new Scenes.Stage([
     createOngoing,
     ongDashboard,
     ongoingBrowse,
+    configDashboard,
 ]);
 // const shareStage = new Scenes.Stage<Scenes.SceneContext>([shareScene]);
 export default stage;

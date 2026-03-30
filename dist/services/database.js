@@ -168,6 +168,19 @@ class Database {
     async getOngChannelStats(channelId) {
         return this.client.getOngChannelStats(channelId);
     }
+    // ConfigVar
+    async getAllConfigVars() {
+        return this.client.getAllConfigVars();
+    }
+    async getConfigVar(key) {
+        return this.client.getConfigVar(key);
+    }
+    async upsertConfigVar(key, encryptedValue, category, updatedBy) {
+        return this.client.upsertConfigVar(key, encryptedValue, category, updatedBy);
+    }
+    async deleteConfigVar(key) {
+        return this.client.deleteConfigVar(key);
+    }
 }
 class ReqDB {
     reqClient;

@@ -20,6 +20,7 @@ import postHandler from "./post.js";
 import cancelQueueHandler from "./cancelQueue.js";
 import transferOwnerHandler from "./transferOwner.js";
 import ongoingBrowseHandler from "./ongoingBrowse.js";
+import configHandler from "./config.js";
 
 export default {
   startHandler,
@@ -58,4 +59,5 @@ export default {
   cancelQueueHandler,
   transferOwnerHandler,
   ongoingBrowseHandler,
+  configHandler,
 };

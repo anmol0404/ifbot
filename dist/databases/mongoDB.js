@@ -9,6 +9,7 @@ import OngoingModel from "./models/ongoingModel.js";
 import { HindiDramaModel } from "./models/aIOModel.js";
 import OngChannelModel from "./models/ongChannelModel.js";
 import OngEpisodeModel from "./models/ongEpisodeModel.js";
+import ConfigVarModel from "./models/configVarModel.js";
 import { InviteService } from "./inviteService.js";
 import TokenModel from "./models/tokenModel.js";
 import { sendToLogGroup } from "../utils/sendToCollection.js";
@@ -588,6 +589,20 @@ class MongoDB {
             totalEpisodes: channel?.totalEpisodes || 0,
             lastPostedAt: channel?.lastPostedAt || null,
         };
+    }
+    // ConfigVar CRUD
+    async getAllConfigVars() {
+        return ConfigVarModel.find().lean();
+    }
+    async getConfigVar(key) {
+        return ConfigVarModel.findOne({ key }).lean();
+    }
+    async upsertConfigVar(key, encryptedValue, category, updatedBy) {
+        await ConfigVarModel.findOneAndUpdate({ key }, { encryptedValue, category, updatedBy, updatedAt: new Date() }, { upsert: true });
+    }
+    async deleteConfigVar(key) {
+        const result = await ConfigVarModel.deleteOne({ key });
+        return result.deletedCount > 0;
     }
 }
 const mongoDB = new MongoDB();

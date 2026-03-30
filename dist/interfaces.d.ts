@@ -8,6 +8,7 @@ import { InviteUser } from "./databases/interfaces/inviteUser.js";
 import { OngoingDocument } from "./databases/interfaces/ongoingDocument.js";
 import { OngChannel } from "./databases/interfaces/ongChannel.js";
 import { OngEpisode } from "./databases/interfaces/ongEpisode.js";
+import { IConfigVar } from "./databases/interfaces/configVar.js";
 export type CommandContext = NarrowedContext<WizardContext<WizardSessionData>, {
     message: Update.New & Update.NonChannel & Message.TextMessage;
     update_id: number;
@@ -81,6 +82,10 @@ export interface DatabaseClient {
         totalEpisodes: number;
         lastPostedAt: Date | null;
     }>;
+    getAllConfigVars(): Promise<IConfigVar[]>;
+    getConfigVar(key: string): Promise<IConfigVar | null>;
+    upsertConfigVar(key: string, encryptedValue: string, category: string, updatedBy: number): Promise<void>;
+    deleteConfigVar(key: string): Promise<boolean>;
 }
 export interface RequestDBClient {
     initialize(): Promise<void>;

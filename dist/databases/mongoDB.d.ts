@@ -5,6 +5,7 @@ import { SortDocument } from "./interfaces/sort.js";
 import { AIODocument } from "./interfaces/aIO.js";
 import { OngChannel } from "./interfaces/ongChannel.js";
 import { OngEpisode } from "./interfaces/ongEpisode.js";
+import { IConfigVar } from "./interfaces/configVar.js";
 import { AIOSearchCriteria } from "./interfaces/searchCriteria.js";
 import { InviteService } from "./inviteService.js";
 import { InviteUser } from "./interfaces/inviteUser.js";
@@ -90,6 +91,10 @@ declare class MongoDB {
         totalEpisodes: number;
         lastPostedAt: Date | null;
     }>;
+    getAllConfigVars(): Promise<IConfigVar[]>;
+    getConfigVar(key: string): Promise<IConfigVar | null>;
+    upsertConfigVar(key: string, encryptedValue: string, category: string, updatedBy: number): Promise<void>;
+    deleteConfigVar(key: string): Promise<boolean>;
 }
 declare const mongoDB: MongoDB;
 export default mongoDB;

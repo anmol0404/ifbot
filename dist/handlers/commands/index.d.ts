@@ -19,6 +19,7 @@ import postHandler from "./post.js";
 import cancelQueueHandler from "./cancelQueue.js";
 import transferOwnerHandler from "./transferOwner.js";
 import ongoingBrowseHandler from "./ongoingBrowse.js";
+import configHandler from "./config.js";
 declare const _default: {
     startHandler: typeof startHandler;
     createOngoingHandler: typeof createOngoingHandler;
@@ -41,5 +42,6 @@ declare const _default: {
     cancelQueueHandler: typeof cancelQueueHandler;
     transferOwnerHandler: typeof transferOwnerHandler;
     ongoingBrowseHandler: typeof ongoingBrowseHandler;
+    configHandler: typeof configHandler;
 };
 export default _default;

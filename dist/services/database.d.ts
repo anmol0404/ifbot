@@ -7,6 +7,7 @@ import { InviteUser } from "../databases/interfaces/inviteUser.js";
 import { OngoingDocument } from "../databases/interfaces/ongoingDocument.js";
 import { OngChannel } from "../databases/interfaces/ongChannel.js";
 import { OngEpisode } from "../databases/interfaces/ongEpisode.js";
+import { IConfigVar } from "../databases/interfaces/configVar.js";
 declare class Database {
     client: DatabaseClient;
     constructor();
@@ -77,6 +78,10 @@ declare class Database {
         totalEpisodes: number;
         lastPostedAt: Date | null;
     }>;
+    getAllConfigVars(): Promise<IConfigVar[]>;
+    getConfigVar(key: string): Promise<IConfigVar | null>;
+    upsertConfigVar(key: string, encryptedValue: string, category: string, updatedBy: number): Promise<void>;
+    deleteConfigVar(key: string): Promise<boolean>;
 }
 declare class ReqDB {
     reqClient: RequestDBClient;
