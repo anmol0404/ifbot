@@ -1,5 +1,5 @@
 import { Scenes, Telegraf } from "telegraf";
-import { User } from "telegraf/typings/core/types/typegram.js";
+import { InlineKeyboardMarkup, User } from "telegraf/typings/core/types/typegram.js";
 declare class Telegram {
     app: Telegraf<Scenes.WizardContext>;
     messages: Map<number, number[]>;
@@ -12,11 +12,7 @@ declare class Telegram {
     sendWaitingMessage(chatId: number): Promise<void>;
     deleteWaitingMessage(chatId: number): Promise<void>;
     sendForceJoinMessage(shareId: number, chatId: number, user: User, chatsUserHasNotJoined: number[]): Promise<void>;
-    getForceChatButtons(shareId: number, chatsUserHasNotJoined: number[]): Promise<{
-        inline_keyboard: (import("@telegraf/types/markup.js").InlineKeyboardButton.UrlButton & {
-            hide: boolean;
-        })[][];
-    }>;
+    getForceChatButtons(shareId: number, chatsUserHasNotJoined: number[]): Promise<InlineKeyboardMarkup>;
     addMessage(chatId: number, messageId: number): void;
     clearMessages(chatId: number): void;
     forwardMessages(toChatId: number, fromChatId: number, messageIds: number[], deleteOrNot?: boolean, captions?: string[]): Promise<number[]>;

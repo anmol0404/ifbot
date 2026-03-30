@@ -3,7 +3,7 @@ import { CommandContext } from "../../interfaces.js";
 import auth from "../../services/auth.js";
 import logger from "../../utils/logger.js";
 
-export default async function helpHandler(ctx: CommandContext) {
+export default async function helpHandler(ctx: CommandContext): Promise<any> {
   const userId = ctx.from?.id;
   if (!auth.isAdmin(userId ? userId : 0)) {
     return ctx.reply("to join group :/start");

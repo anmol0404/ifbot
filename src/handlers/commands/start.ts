@@ -12,7 +12,7 @@ import {
 } from "../../utils/helper.js";
 import logger from "../../utils/logger.js";
 
-export default async function startHandler(ctx: CommandContext) {
+export default async function startHandler(ctx: CommandContext): Promise<any> {
   const chatId = ctx.chat.id;
   const user = ctx.from;
   const userId = user.id;

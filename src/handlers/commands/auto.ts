@@ -2,7 +2,7 @@ import { Context } from "telegraf";
 import auth from "../../services/auth.js";
 import fileQueueManager from "../../services/fileQueue.js";
 
-export default async function autoHandler(ctx: Context) {
+export default async function autoHandler(ctx: Context): Promise<any> {
   const userId = ctx.from?.id;
 
   if (!userId || !auth.isAdmin(userId)) {

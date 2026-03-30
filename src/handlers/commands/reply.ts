@@ -1,7 +1,7 @@
 import { CommandContext } from "../../interfaces.js";
 import logger from "../../utils/logger.js";
 
-export default async function replyHandler(ctx: CommandContext) {
+export default async function replyHandler(ctx: CommandContext): Promise<any> {
   try {
     const replyMessage = ctx.message.reply_to_message;
     if (!replyMessage) {

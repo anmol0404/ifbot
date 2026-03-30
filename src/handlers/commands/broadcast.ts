@@ -9,7 +9,7 @@ import logger from "../../utils/logger.js";
 
 let broadcastActive: boolean = true;
 
-export default async function myBroadcastHandler(ctx: WizardContext) {
+export default async function myBroadcastHandler(ctx: WizardContext): Promise<any> {
   const userId = ctx.from?.id ?? 0;
 
   if (!ctx.message || !("text" in ctx.message)) return;

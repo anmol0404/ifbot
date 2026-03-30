@@ -1,7 +1,7 @@
 import { WizardContext } from "telegraf/typings/scenes";
 import auth from "../../services/auth.js";
 
-export default async function editAioHandler(ctx: WizardContext) {
+export default async function editAioHandler(ctx: WizardContext): Promise<any> {
   const userId = ctx.from?.id;
 
   if (!auth.isAdmin(userId ? userId : 0)) {

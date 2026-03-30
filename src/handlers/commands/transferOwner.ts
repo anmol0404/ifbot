@@ -8,7 +8,7 @@ import logger from "../../utils/logger.js";
 // Temporary store for admins awaiting 2FA password input
 const twoFaStore = new Map<number, { channelId: number; pendingOwner: string }[]>();
 
-export default async function transferOwnerHandler(ctx: CommandContext) {
+export default async function transferOwnerHandler(ctx: CommandContext): Promise<any> {
   const userId = ctx.from?.id;
   if (!userId || !auth.isAdmin(userId)) {
     return ctx.reply("🚫 Admin only.");

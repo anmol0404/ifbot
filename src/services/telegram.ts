@@ -121,7 +121,7 @@ class Telegram {
     });
   }
 
-  async getForceChatButtons(shareId: number, chatsUserHasNotJoined: number[]) {
+  async getForceChatButtons(shareId: number, chatsUserHasNotJoined: number[]): Promise<InlineKeyboardMarkup> {
     const limitPerRow = 2;
 
     const rawButtons = await mapAsync(chatsUserHasNotJoined, async (chatId, index) => {

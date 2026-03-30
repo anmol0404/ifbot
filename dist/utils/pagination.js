@@ -1,23 +1,21 @@
 import env from "../services/env.js";
 /**
  * Build navigation row: [◀️ Prev] [1/N] [▶️ Next]
- * - Prev/Next are secondary (gray) when active, destructive with ✗ when at boundary
- * - Page counter is primary (blue)
+ * Prev shows ✗ on first page, Next shows ✗ on last page.
  */
 export function buildNavRow(page, total, prevCb, nextCb) {
     const isFirst = page === 0;
     const isLast = page >= total - 1;
     const prev = isFirst
-        ? { text: "✗", callback_data: "noop", style: "destructive" }
-        : { text: "◀️ 𝗣𝗥𝗘𝗩", callback_data: prevCb, style: "secondary" };
+        ? { text: "✗", callback_data: "noop" }
+        : { text: "◀️ 𝗣𝗥𝗘𝗩", callback_data: prevCb };
     const counter = {
-        text: `${page + 1} / ${total}`,
+        text: `📄 ${page + 1} / ${total}`,
         callback_data: "noop",
-        style: "primary",
     };
     const next = isLast
-        ? { text: "✗", callback_data: "noop", style: "destructive" }
-        : { text: "𝗡𝗘𝗫𝗧 ▶️", callback_data: nextCb, style: "secondary" };
+        ? { text: "✗", callback_data: "noop" }
+        : { text: "𝗡𝗘𝗫𝗧 ▶️", callback_data: nextCb };
     return [prev, counter, next];
 }
 /**
@@ -27,7 +25,7 @@ export function buildAIOPaginationKeyboard(page, total, prevCb, nextCb, download
     return {
         inline_keyboard: [
             buildNavRow(page, total, prevCb, nextCb),
-            [{ text: "𝗗𝗢𝗪𝗡𝗟𝗢𝗔𝗗", url: downloadLink, style: "primary" }],
+            [{ text: "𝗗𝗢𝗪𝗡𝗟𝗢𝗔𝗗", url: downloadLink }],
             [{ text: "𝗝𝗼𝗶𝗻 𝗕𝗮𝗰𝗸-𝗨𝗽", url: env.backup }],
             [
                 {
@@ -42,10 +40,11 @@ export function buildAIOPaginationKeyboard(page, total, prevCb, nextCb, download
  * Build full pagination keyboard for ongoing channel browsing.
  */
 export function buildOngoingPaginationKeyboard(page, total, prevCb, nextCb, watchLink) {
-    const keyboard = [
-        buildNavRow(page, total, prevCb, nextCb),
-        [{ text: "▶️ 𝗪𝗮𝘁𝗰𝗵 𝗖𝗵𝗮𝗻𝗻𝗲𝗹", url: watchLink, style: "primary" }],
-        [{ text: "𝗝𝗼𝗶𝗻 𝗕𝗮𝗰𝗸-𝗨𝗽", url: env.backup }],
-    ];
-    return { inline_keyboard: keyboard };
+    return {
+        inline_keyboard: [
+            buildNavRow(page, total, prevCb, nextCb),
+            [{ text: "▶️ 𝗪𝗮𝘁𝗰𝗵 𝗖𝗵𝗮𝗻𝗻𝗲𝗹", url: watchLink }],
+            [{ text: "𝗝𝗼𝗶𝗻 𝗕𝗮𝗰𝗸-𝗨𝗽", url: env.backup }],
+        ],
+    };
 }
