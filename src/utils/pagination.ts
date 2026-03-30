@@ -1,23 +1,14 @@
 import env from "../services/env.js";
 
-/**
- * Build pagination inline keyboard rows with colored buttons (Bot API 9.4 style field).
- *
- * Style values: "primary" (blue), "secondary" (gray), "destructive" (red)
- * Telegraf types don't include `style` yet, so we cast to `any`.
- */
-
 interface PaginationButton {
   text: string;
   callback_data?: string;
   url?: string;
-  style?: string;
 }
 
 /**
  * Build navigation row: [◀️ Prev] [1/N] [▶️ Next]
- * - Prev/Next are secondary (gray) when active, destructive with ✗ when at boundary
- * - Page counter is primary (blue)
+ * Prev shows ✗ on first page, Next shows ✗ on last page.
  */
 export function buildNavRow(
   page: number,
@@ -29,18 +20,17 @@ export function buildNavRow(
   const isLast = page >= total - 1;
 
   const prev: PaginationButton = isFirst
-    ? { text: "✗", callback_data: "noop", style: "destructive" }
-    : { text: "◀️ 𝗣𝗥𝗘𝗩", callback_data: prevCb, style: "secondary" };
+    ? { text: "✗", callback_data: "noop" }
+    : { text: "◀️ 𝗣𝗥𝗘𝗩", callback_data: prevCb };
 
   const counter: PaginationButton = {
-    text: `${page + 1} / ${total}`,
+    text: `📄 ${page + 1} / ${total}`,
     callback_data: "noop",
-    style: "primary",
   };
 
   const next: PaginationButton = isLast
-    ? { text: "✗", callback_data: "noop", style: "destructive" }
-    : { text: "𝗡𝗘𝗫𝗧 ▶️", callback_data: nextCb, style: "secondary" };
+    ? { text: "✗", callback_data: "noop" }
+    : { text: "𝗡𝗘𝗫𝗧 ▶️", callback_data: nextCb };
 
   return [prev, counter, next];
 }
@@ -57,8 +47,8 @@ export function buildAIOPaginationKeyboard(
 ) {
   return {
     inline_keyboard: [
-      buildNavRow(page, total, prevCb, nextCb) as any[],
-      [{ text: "𝗗𝗢𝗪𝗡𝗟𝗢𝗔𝗗", url: downloadLink, style: "primary" }],
+      buildNavRow(page, total, prevCb, nextCb),
+      [{ text: "𝗗𝗢𝗪𝗡𝗟𝗢𝗔𝗗", url: downloadLink }],
       [{ text: "𝗝𝗼𝗶𝗻 𝗕𝗮𝗰𝗸-𝗨𝗽", url: env.backup }],
       [
         {
@@ -67,7 +57,7 @@ export function buildAIOPaginationKeyboard(
         },
       ],
     ],
-  };
+  } as any;
 }
 
 /**
@@ -80,10 +70,11 @@ export function buildOngoingPaginationKeyboard(
   nextCb: string,
   watchLink: string
 ) {
-  const keyboard: any[][] = [
-    buildNavRow(page, total, prevCb, nextCb) as any[],
-    [{ text: "▶️ 𝗪𝗮𝘁𝗰𝗵 𝗖𝗵𝗮𝗻𝗻𝗲𝗹", url: watchLink, style: "primary" }],
-    [{ text: "𝗝𝗼𝗶𝗻 𝗕𝗮𝗰𝗸-𝗨𝗽", url: env.backup }],
-  ];
-  return { inline_keyboard: keyboard };
+  return {
+    inline_keyboard: [
+      buildNavRow(page, total, prevCb, nextCb),
+      [{ text: "▶️ 𝗪𝗮𝘁𝗰𝗵 𝗖𝗵𝗮𝗻𝗻𝗲𝗹", url: watchLink }],
+      [{ text: "𝗝𝗼𝗶𝗻 𝗕𝗮𝗰𝗸-𝗨𝗽", url: env.backup }],
+    ],
+  } as any;
 }
