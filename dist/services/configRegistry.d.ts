@@ -1,5 +1,5 @@
-export type ConfigCategory = "channels" | "links" | "text" | "ai" | "tokens";
-export type ConfigVarType = "number" | "string" | "url" | "number[]";
+export type ConfigCategory = "channels" | "links" | "text" | "ai" | "tokens" | "webhook";
+export type ConfigVarType = "number" | "string" | "url" | "number[]" | "boolean";
 export interface ConfigVarDefinition {
     envKey: string;
     envObjKey: string;

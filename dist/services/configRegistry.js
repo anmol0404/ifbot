@@ -1,6 +1,7 @@
 export const CONFIG_CATEGORIES = {
     channels: { label: "Channel/Group IDs", emoji: "📺" },
     links: { label: "Links & URLs", emoji: "🔗" },
+    webhook: { label: "Webhook Config", emoji: "🌐" },
     text: { label: "Text & Config", emoji: "📝" },
     ai: { label: "AI Configuration", emoji: "🤖" },
     tokens: { label: "Tokens & Keys", emoji: "🔑" },
@@ -21,6 +22,7 @@ export const CONFIG_VARS = [
     { envKey: "FORCE_GROUP_IDS", envObjKey: "forceGroupIds", displayName: "Force Group IDs", category: "channels", type: "number[]", sensitive: false },
     { envKey: "LOG_GROUP_ID", envObjKey: "logGroupId", displayName: "Log Group", category: "channels", type: "number", sensitive: false },
     { envKey: "ONGOING_COLLECTION", envObjKey: "collectionOngoing", displayName: "Ongoing Collection", category: "channels", type: "number", sensitive: false },
+    { envKey: "USE_JOIN_REQUEST_FOR_FORCE_JOIN", envObjKey: "useJoinRequestForForceJoin", displayName: "Join Request (Force Join)", category: "channels", type: "boolean", sensitive: false },
     // Links
     { envKey: "BACKUP", envObjKey: "backup", displayName: "Backup Link", category: "links", type: "url", sensitive: false },
     { envKey: "DB_POSTER", envObjKey: "dbPosterLink", displayName: "DB Poster Link", category: "links", type: "url", sensitive: false },
@@ -28,6 +30,7 @@ export const CONFIG_VARS = [
     { envKey: "HOW_TO_DOWNLOAD_MSG_LINK", envObjKey: "howToDownload", displayName: "How To Download", category: "links", type: "url", sensitive: false },
     { envKey: "BOT_SUPPORT_LINK", envObjKey: "botSupportLink", displayName: "Bot Support Link", category: "links", type: "url", sensitive: false },
     { envKey: "WEBSITE_BASE_URL", envObjKey: "baseUrl", displayName: "Website Base URL", category: "links", type: "url", sensitive: false },
+    { envKey: "WEBHOOK_DOMAIN", envObjKey: "webhookDomain", displayName: "Webhook Domain", category: "links", type: "url", sensitive: false },
     // Text
     { envKey: "BOT_USERNAME", envObjKey: "botUserName", displayName: "Bot Username", category: "text", type: "string", sensitive: false },
     { envKey: "JOIN", envObjKey: "join", displayName: "Join Message", category: "text", type: "string", sensitive: false },

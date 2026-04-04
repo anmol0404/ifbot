@@ -31,6 +31,15 @@ app.on("callback_query", async (ctx, next) => {
     if (!handled)
         return next();
 });
+app.on("chat_join_request", async (ctx) => {
+    try {
+        await ctx.approveChatJoinRequest(ctx.from.id);
+        logger.info(`Approved join request from user ${ctx.from.id} for chat ${ctx.chat.id}`);
+    }
+    catch (err) {
+        logger.error("Failed to approve join request:", err);
+    }
+});
 app.use(useNewReplies());
 app.command("start", commands.startHandler);
 app.command("addtopremium", commands.addToPremiumHandler);
@@ -54,6 +63,7 @@ app.command("ongoing", commands.ongoingBrowseHandler);
 app.command("topinviters", commands.topInvitesHandler);
 app.command("myinvitestatus", commands.inviteStatusHandler);
 app.command("config", commands.configHandler);
+app.command("requestlink", commands.requestlinkHandler);
 app.catch(async (err, ctx) => {
     logger.error(`Error in ${ctx.updateType}`, err);
 });

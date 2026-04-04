@@ -7,6 +7,7 @@ declare class Telegram {
     waitingMessageTimeout: NodeJS.Timeout;
     firstWaitingMessage: boolean;
     inviteLinks: Map<number, string>;
+    joinRequestLinks: Map<number, string>;
     constructor();
     initialize(): Promise<void>;
     sendWaitingMessage(chatId: number): Promise<void>;
@@ -19,6 +20,7 @@ declare class Telegram {
     getChatsUserHasNotJoined(userId: number): Promise<number[]>;
     alreadyJoinChat(chatId: number, userId: number): Promise<boolean>;
     getInviteLink(chatId: number): Promise<string>;
+    getJoinRequestLink(chatId: number): Promise<string>;
 }
 declare const telegram: Telegram;
 export default telegram;

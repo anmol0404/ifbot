@@ -48,6 +48,7 @@ declare const envObj: {
     apiId: number;
     apiHash: string;
     twoFaPassword: string;
+    useJoinRequestForForceJoin: boolean;
 };
 export declare function loadConfigFromDB(): Promise<void>;
 export default envObj;

@@ -100,7 +100,7 @@ export default {
         if (ctx.callbackQuery && "data" in ctx.callbackQuery) {
             const callbackData = ctx.callbackQuery.data;
             try {
-                let message = "?";
+                let message = "";
                 const firstName = (ctx.message?.from.first_name?.replace(/[^a-zA-Z0-9]/g, "") || "User").trim();
                 switch (callbackData) {
                     case "features":
@@ -118,6 +118,8 @@ export default {
                     case "home":
                         message = "home";
                         break;
+                    default:
+                        return next();
                 }
                 if (message) {
                     if (message === "home") {
