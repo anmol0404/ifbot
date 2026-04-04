@@ -18,7 +18,7 @@ import { FmtString } from "telegraf/format.js";
 import logger from "../utils/logger.js";
 
 export default {
-  async private(ctx: Context, next: () => void) {
+  async private(ctx: Context, next: () => Promise<any>) {
     logger.debug("Chat ID:", ctx.chat?.id);
 
     if (ctx.message && "text" in ctx.message && auth.isAdmin(ctx.from?.id ?? 0)) {
@@ -115,7 +115,7 @@ export default {
     if (ctx.callbackQuery && "data" in ctx.callbackQuery) {
       const callbackData = ctx.callbackQuery.data;
       try {
-        let message: string | FmtString = "?";
+        let message: string | FmtString = "";
         const firstName = (
           ctx.message?.from.first_name?.replace(/[^a-zA-Z0-9]/g, "") || "User"
         ).trim();
@@ -139,6 +139,8 @@ export default {
           case "home":
             message = "home";
             break;
+          default:
+            return next();
         }
 
         if (message) {

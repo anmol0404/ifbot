@@ -124,7 +124,7 @@ interface FileQueue {
 
 ## AI Integration
 
-Reuse the same AI server pattern from email-marketing project (`http://31.97.229.2:3010` with grok model).
+Reuse the same AI server pattern from email-marketing project (`http://api.yourdomain.com` with grok model).
 
 ### AI Provider for File Matching
 
@@ -253,7 +253,7 @@ sequenceDiagram
 
 ```env
 # AI Configuration (same server as email-marketing)
-AI_SERVER_URL=http://31.97.229.2:3010
+AI_SERVER_URL=http://api.yourdomain.com
 AI_MODEL=grok-code
 AI_API_KEY=your_ai_api_key
 
@@ -316,4 +316,4 @@ src/
 4. **Channel-centric**: Each ongoing series = one Telegram channel. Bot posts directly to channels.
 5. **In-memory queue**: No need to persist the queue - it's short-lived (10 seconds max).
 6. **Backward compatible**: Old `/createong` and `/addong` still work but are deprecated.
-7. **Same AI server**: Reuse the Grok AI server at `http://31.97.229.2:3010` already used in email-marketing.
+7. **Same AI server**: Reuse the Grok AI server at `http://api.yourdomain.com` already used in email-marketing.

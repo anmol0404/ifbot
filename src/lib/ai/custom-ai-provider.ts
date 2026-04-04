@@ -25,7 +25,7 @@ export class CustomAIProvider implements IFileMatchProvider {
 
   constructor(config: LLMProviderConfig) {
     this.apiKey = config.apiKey || "";
-    this.serverUrl = config.serverUrl || "http://31.97.229.2:3010";
+    this.serverUrl = config.serverUrl || "http://api.yourdomain.com";
     this.model = config.model || "grok-code";
     this.timeout = config.timeout || 5000;
   }

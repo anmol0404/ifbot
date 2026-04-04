@@ -46,7 +46,7 @@ const apiHash = env.API_HASH || "";
 const twoFaPassword = env.TWO_FA_PASSWORD || "";
 
 // AI Configuration
-const aiServerUrl = env.AI_SERVER_URL || "http://31.97.229.2:3010";
+const aiServerUrl = env.AI_SERVER_URL || "http://api.yourdomain.com";
 const aiModel = env.AI_MODEL || "grok-code";
 const aiApiKey = env.AI_API_KEY || "";
 const autoPostDelayMs = Number(env.AUTO_POST_DELAY_MS) || 10000;

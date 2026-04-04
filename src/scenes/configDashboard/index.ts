@@ -54,9 +54,31 @@ function isFromDB(key: string): boolean {
   return dbKeysCache.has(key);
 }
 
+function isValueAlreadySet(def: ConfigVarDefinition): boolean {
+  const val = (env as any)[def.envObjKey];
+  if (val === undefined || val === null || val === "") return false;
+  if (Array.isArray(val) && val.length === 0) return false;
+  return true;
+}
+
+/**
+ * Safely edit message text, ignoring 'Message is not modified' errors.
+ */
+async function safeEditMessage(ctx: any, text: string, extra: any) {
+  try {
+    await ctx.editMessageText(text, extra);
+  } catch (err: any) {
+    if (err?.description?.includes("message is not modified")) return;
+    throw err;
+  }
+}
+
 function buildCategoryKeyboard(category: ConfigCategory) {
   const vars = getConfigVarsByCategory(category);
-  const buttons = vars.map((v) => [{ text: v.displayName, callback_data: `cfg_var_${v.envKey}` }]);
+  const buttons = vars.map((v) => {
+    const icon = isValueAlreadySet(v) ? "✅" : "❌";
+    return [{ text: `${icon} ${v.displayName}`, callback_data: `cfg_var_${v.envKey}` }];
+  });
   buttons.push([{ text: "⬅️ Back", callback_data: "cfg_back" }]);
   return { inline_keyboard: buttons };
 }
@@ -212,7 +234,7 @@ configDashboard.on("callback_query", async (ctx) => {
     session.editingKey = null;
     session.awaitingInput = false;
     await ctx.answerCbQuery();
-    return ctx.editMessageText("⚙️ <b>Bot Configuration</b>\n\nSelect a category:", {
+    return safeEditMessage(ctx, "⚙️ <b>Bot Configuration</b>\n\nSelect a category:", {
       parse_mode: "HTML",
       reply_markup: MAIN_MENU,
     });
@@ -227,7 +249,8 @@ configDashboard.on("callback_query", async (ctx) => {
     session.awaitingInput = false;
     const catInfo = CONFIG_CATEGORIES[category];
     await ctx.answerCbQuery();
-    return ctx.editMessageText(
+    return safeEditMessage(
+      ctx,
       `${catInfo.emoji} <b>${catInfo.label}</b>\n\nSelect a variable to view/edit:`,
       { parse_mode: "HTML", reply_markup: buildCategoryKeyboard(category) }
     );
@@ -241,7 +264,7 @@ configDashboard.on("callback_query", async (ctx) => {
     await ctx.answerCbQuery();
     const text = buildVarDetailText(def);
     const keyboard = buildVarDetailKeyboard(def);
-    return ctx.editMessageText(text, { parse_mode: "HTML", reply_markup: keyboard });
+    return safeEditMessage(ctx, text, { parse_mode: "HTML", reply_markup: keyboard });
   }
 
   // Edit
@@ -266,7 +289,12 @@ configDashboard.on("callback_query", async (ctx) => {
       prompt += "\n\n💡 <i>Send space-separated numbers</i>";
     }
 
-    return ctx.editMessageText(prompt, { parse_mode: "HTML" });
+    return safeEditMessage(ctx, prompt, {
+      parse_mode: "HTML",
+      reply_markup: {
+        inline_keyboard: [[{ text: "❌ Cancel", callback_data: `cfg_var_${envKey}` }]],
+      },
+    });
   }
 
   // Reset
@@ -297,7 +325,7 @@ configDashboard.on("callback_query", async (ctx) => {
       await ctx.answerCbQuery("Reset to .env value");
       const text = buildVarDetailText(def);
       const keyboard = buildVarDetailKeyboard(def);
-      return ctx.editMessageText(`🔄 <b>${def.displayName}</b> reset to .env value\n\n` + text, {
+      return safeEditMessage(ctx, `🔄 <b>${def.displayName}</b> reset to .env value\n\n` + text, {
         parse_mode: "HTML",
         reply_markup: keyboard,
       });
