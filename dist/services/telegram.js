@@ -1,5 +1,6 @@
 import { Markup, Telegraf, deunionize } from "telegraf";
 import env from "./env.js";
+import database from "./database.js";
 import filterAsync from "../extra/filterAsync.js";
 import mapAsync from "../extra/mapAsync.js";
 import splitArray from "../extra/splitArray.js";
@@ -198,10 +199,16 @@ class Telegram {
     }
     async alreadyJoinChat(chatId, userId) {
         const { status } = await this.app.telegram.getChatMember(chatId, userId);
-        return (status === "administrator" ||
+        const isMember = (status === "administrator" ||
             status === "creator" ||
             status === "member" ||
             status === "restricted");
+        if (isMember)
+            return true;
+        if (env.useJoinRequestForForceJoin) {
+            return await database.hasJoinRequest(userId, chatId);
+        }
+        return false;
     }
     async getInviteLink(chatId) {
         const cachedInviteLink = this.inviteLinks.get(chatId);

@@ -2,6 +2,7 @@ import mongoose, { Model } from "mongoose";
 import { MessageDocument } from "./models/messageModel.js";
 import { UserDocument } from "./models/userModel.js";
 import { SortDocument } from "./interfaces/sort.js";
+import { JoinRequestDocument } from "./models/joinRequestModel.js";
 import { AIODocument } from "./interfaces/aIO.js";
 import { OngChannel } from "./interfaces/ongChannel.js";
 import { OngEpisode } from "./interfaces/ongEpisode.js";
@@ -20,6 +21,7 @@ declare class MongoDB {
     OngoingModel: Model<OngoingDocument>;
     HindiDramaModel: Model<AIODocument>;
     TokenModel: Model<ITokenDocument>;
+    JoinRequestModel: Model<JoinRequestDocument>;
     inviteService: InviteService;
     databaseUrl: string;
     constructor();
@@ -95,6 +97,8 @@ declare class MongoDB {
     getConfigVar(key: string): Promise<IConfigVar | null>;
     upsertConfigVar(key: string, encryptedValue: string, category: string, updatedBy: number): Promise<void>;
     deleteConfigVar(key: string): Promise<boolean>;
+    saveJoinRequest(userId: number, chatId: number): Promise<void>;
+    hasJoinRequest(userId: number, chatId: number): Promise<boolean>;
 }
 declare const mongoDB: MongoDB;
 export default mongoDB;

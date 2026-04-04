@@ -181,6 +181,13 @@ class Database {
     async deleteConfigVar(key) {
         return this.client.deleteConfigVar(key);
     }
+    // join request
+    async saveJoinRequest(userId, chatId) {
+        return this.client.saveJoinRequest(userId, chatId);
+    }
+    async hasJoinRequest(userId, chatId) {
+        return this.client.hasJoinRequest(userId, chatId);
+    }
 }
 class ReqDB {
     reqClient;

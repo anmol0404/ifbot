@@ -10,6 +10,7 @@ import { HindiDramaModel } from "./models/aIOModel.js";
 import OngChannelModel from "./models/ongChannelModel.js";
 import OngEpisodeModel from "./models/ongEpisodeModel.js";
 import ConfigVarModel from "./models/configVarModel.js";
+import JoinRequestModel from "./models/joinRequestModel.js";
 import { InviteService } from "./inviteService.js";
 import TokenModel from "./models/tokenModel.js";
 import { sendToLogGroup } from "../utils/sendToCollection.js";
@@ -23,6 +24,7 @@ class MongoDB {
     OngoingModel;
     HindiDramaModel;
     TokenModel;
+    JoinRequestModel;
     inviteService;
     databaseUrl;
     constructor() {
@@ -34,6 +36,7 @@ class MongoDB {
         this.TokenModel = TokenModel;
         this.OngoingModel = OngoingModel;
         this.HindiDramaModel = HindiDramaModel;
+        this.JoinRequestModel = JoinRequestModel;
         this.databaseUrl = env.databaseUrl || "";
         this.inviteService = new InviteService();
     }
@@ -603,6 +606,25 @@ class MongoDB {
     async deleteConfigVar(key) {
         const result = await ConfigVarModel.deleteOne({ key });
         return result.deletedCount > 0;
+    }
+    // join request
+    async saveJoinRequest(userId, chatId) {
+        try {
+            await this.JoinRequestModel.updateOne({ userId, chatId }, { $set: { requestedAt: new Date() } }, { upsert: true });
+        }
+        catch (error) {
+            logger.error("Error saving join request:", error);
+        }
+    }
+    async hasJoinRequest(userId, chatId) {
+        try {
+            const request = await this.JoinRequestModel.findOne({ userId, chatId });
+            return !!request;
+        }
+        catch (error) {
+            logger.error("Error checking join request:", error);
+            return false;
+        }
     }
 }
 const mongoDB = new MongoDB();

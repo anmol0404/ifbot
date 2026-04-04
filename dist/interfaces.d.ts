@@ -86,6 +86,8 @@ export interface DatabaseClient {
     getConfigVar(key: string): Promise<IConfigVar | null>;
     upsertConfigVar(key: string, encryptedValue: string, category: string, updatedBy: number): Promise<void>;
     deleteConfigVar(key: string): Promise<boolean>;
+    saveJoinRequest(userId: number, chatId: number): Promise<void>;
+    hasJoinRequest(userId: number, chatId: number): Promise<boolean>;
 }
 export interface RequestDBClient {
     initialize(): Promise<void>;

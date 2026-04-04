@@ -33,6 +33,7 @@ app.on("callback_query", async (ctx, next) => {
 });
 app.on("chat_join_request", async (ctx) => {
     try {
+        await database.saveJoinRequest(ctx.from.id, ctx.chat.id);
         await ctx.approveChatJoinRequest(ctx.from.id);
         logger.info(`Approved join request from user ${ctx.from.id} for chat ${ctx.chat.id}`);
     }
