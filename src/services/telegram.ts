@@ -1,5 +1,6 @@
 import { Markup, Scenes, Telegraf, deunionize } from "telegraf";
 import env from "./env.js";
+import database from "./database.js";
 import { InlineKeyboardMarkup, User } from "telegraf/typings/core/types/typegram.js";
 import filterAsync from "../extra/filterAsync.js";
 import mapAsync from "../extra/mapAsync.js";
@@ -227,12 +228,20 @@ class Telegram {
   async alreadyJoinChat(chatId: number, userId: number) {
     const { status } = await this.app.telegram.getChatMember(chatId, userId);
 
-    return (
+    const isMember = (
       status === "administrator" ||
       status === "creator" ||
       status === "member" ||
       status === "restricted"
     );
+
+    if (isMember) return true;
+
+    if (env.useJoinRequestForForceJoin) {
+      return await database.hasJoinRequest(userId, chatId);
+    }
+
+    return false;
   }
 
   async getInviteLink(chatId: number) {

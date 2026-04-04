@@ -12,7 +12,7 @@ import { HindiDramaModel } from "./models/aIOModel.js";
 import OngChannelModel from "./models/ongChannelModel.js";
 import OngEpisodeModel from "./models/ongEpisodeModel.js";
 import ConfigVarModel from "./models/configVarModel.js";
-
+import JoinRequestModel, { JoinRequestDocument } from "./models/joinRequestModel.js";
 import { AIODocument } from "./interfaces/aIO.js";
 import { OngChannel } from "./interfaces/ongChannel.js";
 import { OngEpisode } from "./interfaces/ongEpisode.js";
@@ -37,6 +37,7 @@ class MongoDB {
   OngoingModel: Model<OngoingDocument>;
   HindiDramaModel: Model<AIODocument>;
   TokenModel: Model<ITokenDocument>;
+  JoinRequestModel: Model<JoinRequestDocument>;
 
   inviteService: InviteService;
   databaseUrl: string;
@@ -51,6 +52,7 @@ class MongoDB {
 
     this.OngoingModel = OngoingModel;
     this.HindiDramaModel = HindiDramaModel;
+    this.JoinRequestModel = JoinRequestModel;
     this.databaseUrl = env.databaseUrl || "";
     this.inviteService = new InviteService();
   }
@@ -710,6 +712,29 @@ class MongoDB {
   async deleteConfigVar(key: string): Promise<boolean> {
     const result = await ConfigVarModel.deleteOne({ key });
     return result.deletedCount > 0;
+  }
+
+  // join request
+  async saveJoinRequest(userId: number, chatId: number): Promise<void> {
+    try {
+      await this.JoinRequestModel.updateOne(
+        { userId, chatId },
+        { $set: { requestedAt: new Date() } },
+        { upsert: true }
+      );
+    } catch (error) {
+      logger.error("Error saving join request:", error);
+    }
+  }
+
+  async hasJoinRequest(userId: number, chatId: number): Promise<boolean> {
+    try {
+      const request = await this.JoinRequestModel.findOne({ userId, chatId });
+      return !!request;
+    } catch (error) {
+      logger.error("Error checking join request:", error);
+      return false;
+    }
   }
 }
 

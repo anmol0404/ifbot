@@ -214,6 +214,14 @@ class Database {
   async deleteConfigVar(key: string): Promise<boolean> {
     return this.client.deleteConfigVar(key);
   }
+
+  // join request
+  async saveJoinRequest(userId: number, chatId: number): Promise<void> {
+    return this.client.saveJoinRequest(userId, chatId);
+  }
+  async hasJoinRequest(userId: number, chatId: number): Promise<boolean> {
+    return this.client.hasJoinRequest(userId, chatId);
+  }
 }
 
 class ReqDB {
