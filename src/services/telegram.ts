@@ -17,6 +17,7 @@ class Telegram {
   waitingMessageTimeout: NodeJS.Timeout;
   firstWaitingMessage: boolean;
   inviteLinks: Map<number, string>;
+  joinRequestLinks: Map<number, string>;
 
   constructor() {
     this.app = new Telegraf<Scenes.WizardContext>(env.token);
@@ -25,6 +26,7 @@ class Telegram {
     this.waitingMessageTimeout = setTimeout(() => { });
     this.firstWaitingMessage = true;
     this.inviteLinks = new Map();
+    this.joinRequestLinks = new Map();
   }
 
   async initialize() {
@@ -123,10 +125,13 @@ class Telegram {
 
   async getForceChatButtons(shareId: number, chatsUserHasNotJoined: number[]): Promise<InlineKeyboardMarkup> {
     const limitPerRow = 2;
+    const useJoinRequest = env.useJoinRequestForForceJoin;
 
     const rawButtons = await mapAsync(chatsUserHasNotJoined, async (chatId, index) => {
       const label = `Chat ${index + 1}`;
-      const inviteLink = await this.getInviteLink(chatId);
+      const inviteLink = useJoinRequest
+        ? await this.getJoinRequestLink(chatId)
+        : await this.getInviteLink(chatId);
 
       return Markup.button.url(label, inviteLink);
     });
@@ -246,6 +251,18 @@ class Telegram {
     this.inviteLinks.set(chatId, inviteLink);
 
     return inviteLink;
+  }
+
+  async getJoinRequestLink(chatId: number) {
+    const cached = this.joinRequestLinks.get(chatId);
+    if (cached) return cached;
+
+    const link = await this.app.telegram.createChatInviteLink(chatId, {
+      creates_join_request: true,
+    });
+
+    this.joinRequestLinks.set(chatId, link.invite_link);
+    return link.invite_link;
   }
 }
 const telegram = new Telegram();

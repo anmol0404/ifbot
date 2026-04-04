@@ -34,6 +34,7 @@ const collectionAIO = Number(env.COLLECTION_AIO) || "";
 const collectionHindi = Number(env.COLLECTION_HINDI) || "";
 const collectionOngoing = Number(env.ONGOING_COLLECTION) || "";
 const collectionAIOBackup = Number(env.COLLECTION_AIO_BACKUP) || "";
+const useJoinRequestForForceJoin = env.USE_JOIN_REQUEST_FOR_FORCE_JOIN === "true" || env.USE_JOIN_REQUEST_FOR_FORCE_JOIN === "1";
 const jwtSecret = env.JWT_SECRET || "randomSecretString";
 const howToGenerateToken = env.HOW_TO_GENERATE_TOKEN;
 const botSupportLink = env.BOT_SUPPORT_LINK;
@@ -114,6 +115,7 @@ const envObj = {
   apiId,
   apiHash,
   twoFaPassword,
+  useJoinRequestForForceJoin,
 };
 
 export async function loadConfigFromDB(): Promise<void> {
@@ -141,6 +143,9 @@ export async function loadConfigFromDB(): Promise<void> {
           case "number":
             parsed = Number(rawValue);
             if (isNaN(parsed)) parsed = 0;
+            break;
+          case "boolean":
+            parsed = rawValue === "true" || rawValue === "1" || rawValue === "yes";
             break;
           default:
             parsed = rawValue;
