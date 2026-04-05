@@ -88,6 +88,7 @@ export interface DatabaseClient {
     deleteConfigVar(key: string): Promise<boolean>;
     saveJoinRequest(userId: number, chatId: number): Promise<void>;
     hasJoinRequest(userId: number, chatId: number): Promise<boolean>;
+    deleteJoinRequest(userId: number, chatId: number): Promise<boolean>;
 }
 export interface RequestDBClient {
     initialize(): Promise<void>;

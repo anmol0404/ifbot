@@ -34,11 +34,27 @@ app.on("callback_query", async (ctx, next) => {
 app.on("chat_join_request", async (ctx) => {
     try {
         await database.saveJoinRequest(ctx.from.id, ctx.chat.id);
-        await ctx.approveChatJoinRequest(ctx.from.id);
-        logger.info(`Approved join request from user ${ctx.from.id} for chat ${ctx.chat.id}`);
+        logger.info(`Saved join request from user ${ctx.from.id} for chat ${ctx.chat.id}`);
     }
     catch (err) {
-        logger.error("Failed to approve join request:", err);
+        logger.error("Failed to save join request:", err);
+    }
+});
+app.on("chat_member", async (ctx) => {
+    const { new_chat_member, chat } = ctx.chatMember;
+    const status = new_chat_member.status;
+    if (status === "left" || status === "kicked") {
+        const userId = new_chat_member.user.id;
+        const chatId = chat.id;
+        try {
+            const deleted = await database.deleteJoinRequest(userId, chatId);
+            if (deleted) {
+                logger.info(`Removed join request for user ${userId} from chat ${chatId} (status: ${status})`);
+            }
+        }
+        catch (err) {
+            logger.error(`Failed to remove join request for user ${userId} from chat ${chatId}:`, err);
+        }
     }
 });
 app.use(useNewReplies());
@@ -80,8 +96,9 @@ async function main() {
     });
     initFileReceiver();
     await gramClient.initialize();
+    const allowedUpdates = ["message", "callback_query", "chat_join_request", "chat_member", "my_chat_member"];
     if (env.development) {
-        app.launch({ dropPendingUpdates: true });
+        app.launch({ dropPendingUpdates: true, allowedUpdates });
     }
     else {
         const domain = env.webhookDomain;
@@ -93,7 +110,7 @@ async function main() {
             res.sendStatus(200);
         });
         const port = env.port;
-        server.use(await app.createWebhook({ domain, path: "/zhao010203" }));
+        server.use(await app.createWebhook({ domain, path: "/zhao010203", allowed_updates: allowedUpdates }));
         server.listen(port, () => logger.info(`Server listening on ${port}`));
         setInterval(async () => {
             try {

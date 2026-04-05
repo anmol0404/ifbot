@@ -99,6 +99,7 @@ declare class MongoDB {
     deleteConfigVar(key: string): Promise<boolean>;
     saveJoinRequest(userId: number, chatId: number): Promise<void>;
     hasJoinRequest(userId: number, chatId: number): Promise<boolean>;
+    deleteJoinRequest(userId: number, chatId: number): Promise<boolean>;
 }
 declare const mongoDB: MongoDB;
 export default mongoDB;

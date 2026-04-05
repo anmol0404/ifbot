@@ -188,6 +188,9 @@ class Database {
     async hasJoinRequest(userId, chatId) {
         return this.client.hasJoinRequest(userId, chatId);
     }
+    async deleteJoinRequest(userId, chatId) {
+        return this.client.deleteJoinRequest(userId, chatId);
+    }
 }
 class ReqDB {
     reqClient;

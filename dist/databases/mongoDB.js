@@ -626,6 +626,16 @@ class MongoDB {
             return false;
         }
     }
+    async deleteJoinRequest(userId, chatId) {
+        try {
+            const result = await this.JoinRequestModel.deleteOne({ userId, chatId });
+            return result.deletedCount > 0;
+        }
+        catch (error) {
+            logger.error("Error deleting join request:", error);
+            return false;
+        }
+    }
 }
 const mongoDB = new MongoDB();
 export default mongoDB;

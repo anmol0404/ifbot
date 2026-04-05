@@ -106,6 +106,7 @@ export interface DatabaseClient {
   // join request
   saveJoinRequest(userId: number, chatId: number): Promise<void>;
   hasJoinRequest(userId: number, chatId: number): Promise<boolean>;
+  deleteJoinRequest(userId: number, chatId: number): Promise<boolean>;
 }
 
 export interface RequestDBClient {

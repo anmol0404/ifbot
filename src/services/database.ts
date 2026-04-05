@@ -222,6 +222,9 @@ class Database {
   async hasJoinRequest(userId: number, chatId: number): Promise<boolean> {
     return this.client.hasJoinRequest(userId, chatId);
   }
+  async deleteJoinRequest(userId: number, chatId: number): Promise<boolean> {
+    return this.client.deleteJoinRequest(userId, chatId);
+  }
 }
 
 class ReqDB {

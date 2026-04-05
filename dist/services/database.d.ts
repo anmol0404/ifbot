@@ -84,6 +84,7 @@ declare class Database {
     deleteConfigVar(key: string): Promise<boolean>;
     saveJoinRequest(userId: number, chatId: number): Promise<void>;
     hasJoinRequest(userId: number, chatId: number): Promise<boolean>;
+    deleteJoinRequest(userId: number, chatId: number): Promise<boolean>;
 }
 declare class ReqDB {
     reqClient: RequestDBClient;
