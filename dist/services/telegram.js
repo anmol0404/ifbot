@@ -106,14 +106,14 @@ class Telegram {
     async deleteWaitingMessage(chatId) {
         await this.app.telegram.deleteMessage(chatId, this.waitingMessageId);
     }
-    async sendForceJoinMessage(shareId, chatId, user, chatsUserHasNotJoined) {
+    async sendForceJoinMessage(payload, chatId, user, chatsUserHasNotJoined) {
         const text = `Hello ${user.first_name}\n` + `you must join all the groups/channels below first`;
-        const replyMarkup = await this.getForceChatButtons(shareId, chatsUserHasNotJoined);
+        const replyMarkup = await this.getForceChatButtons(payload, chatsUserHasNotJoined);
         await this.app.telegram.sendMessage(chatId, text, {
             reply_markup: replyMarkup,
         });
     }
-    async getForceChatButtons(shareId, chatsUserHasNotJoined) {
+    async getForceChatButtons(payload, chatsUserHasNotJoined) {
         const limitPerRow = 2;
         const useJoinRequest = env.useJoinRequestForForceJoin;
         const rawButtons = await mapAsync(chatsUserHasNotJoined, async (chatId, index) => {
@@ -125,7 +125,7 @@ class Telegram {
         });
         const forceChatButtons = splitArray(rawButtons, limitPerRow);
         forceChatButtons.push([
-            Markup.button.url("Try again after join above chats", `https://t.me/${this.app.botInfo?.username}?start=${shareId}-eng`),
+            Markup.button.url("Try again after join above chats", `https://t.me/${this.app.botInfo?.username}?start=${payload}`),
         ]);
         return {
             inline_keyboard: forceChatButtons,

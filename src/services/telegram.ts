@@ -112,19 +112,19 @@ class Telegram {
   }
 
   async sendForceJoinMessage(
-    shareId: number,
+    payload: string,
     chatId: number,
     user: User,
     chatsUserHasNotJoined: number[]
   ) {
     const text = `Hello ${user.first_name}\n` + `you must join all the groups/channels below first`;
-    const replyMarkup = await this.getForceChatButtons(shareId, chatsUserHasNotJoined);
+    const replyMarkup = await this.getForceChatButtons(payload, chatsUserHasNotJoined);
     await this.app.telegram.sendMessage(chatId, text, {
       reply_markup: replyMarkup,
     });
   }
 
-  async getForceChatButtons(shareId: number, chatsUserHasNotJoined: number[]): Promise<InlineKeyboardMarkup> {
+  async getForceChatButtons(payload: string, chatsUserHasNotJoined: number[]): Promise<InlineKeyboardMarkup> {
     const limitPerRow = 2;
     const useJoinRequest = env.useJoinRequestForForceJoin;
 
@@ -141,7 +141,7 @@ class Telegram {
     forceChatButtons.push([
       Markup.button.url(
         "Try again after join above chats",
-        `https://t.me/${this.app.botInfo?.username}?start=${shareId}-eng`
+        `https://t.me/${this.app.botInfo?.username}?start=${payload}`
       ),
     ]);
     return {

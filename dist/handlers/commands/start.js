@@ -53,7 +53,7 @@ export default async function startHandler(ctx) {
         if (!auth.isAdmin(userId)) {
             const chatsUserHasNotJoined = await telegram.getChatsUserHasNotJoined(userId);
             if (chatsUserHasNotJoined.length) {
-                return telegram.sendForceJoinMessage(shareId, chatId, user, chatsUserHasNotJoined);
+                return telegram.sendForceJoinMessage(payload, chatId, user, chatsUserHasNotJoined);
             }
         }
         const haveBotPremium = await database

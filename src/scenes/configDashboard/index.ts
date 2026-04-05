@@ -1,5 +1,6 @@
 import { Scenes, Composer } from "telegraf";
 import { WizardContext } from "telegraf/typings/scenes";
+import { Buffer } from "buffer";
 import ConfigDashboardSessionData from "./sessionData.js";
 import database from "../../services/database.js";
 import env from "../../services/env.js";
@@ -34,6 +35,7 @@ const MAIN_MENU = {
     [{ text: "📝 Text & Config", callback_data: "cfg_cat_text" }],
     [{ text: "🤖 AI Configuration", callback_data: "cfg_cat_ai" }],
     [{ text: "🔑 Tokens & Keys", callback_data: "cfg_cat_tokens" }],
+    [{ text: "📤 Export .env", callback_data: "cfg_export_env" }],
     [{ text: "❌ Close", callback_data: "cfg_close" }],
   ],
 };
@@ -333,6 +335,59 @@ configDashboard.on("callback_query", async (ctx) => {
       logger.error(`Error resetting config var ${envKey}:`, err);
       return ctx.answerCbQuery("Failed to reset");
     }
+  }
+
+  // Export .env
+  if (data === "cfg_export_env") {
+    try {
+      await ctx.answerCbQuery("Generating .env backup...");
+      let content = "# Infinite Drama Bot - Configuration Backup\n";
+      content += `# Generated on: ${new Date().toISOString()}\n\n`;
+
+      // 1. Static/Bootstrap variables (not in CONFIG_VARS)
+      const staticVars: Record<string, string | undefined> = {
+        TELEGRAM_BOT_TOKEN: env.token,
+        DATABASE_URL: env.databaseUrl,
+        PORT: String(env.port),
+        JWT_SECRET: env.jwtSecret,
+        SESSION_ID: env.sessionId,
+        API_ID: String(env.apiId),
+        API_HASH: env.apiHash,
+        TWO_FA_PASSWORD: env.twoFaPassword,
+        UPI_ID: env.upiId,
+      };
+
+      for (const [k, v] of Object.entries(staticVars)) {
+        if (v) content += `${k}=${v}\n`;
+      }
+      content += "\n# --- Registry Variables ---\n\n";
+
+      // 2. Registry variables (categorized)
+      for (const vDef of CONFIG_VARS) {
+        const val = (env as any)[vDef.envObjKey];
+        if (val === undefined || val === null) continue;
+
+        let formattedVal: string;
+        if (Array.isArray(val)) {
+          formattedVal = val.join(" ");
+        } else if (typeof val === "boolean") {
+          formattedVal = val ? "true" : "false";
+        } else {
+          formattedVal = String(val);
+        }
+        content += `${vDef.envKey}=${formattedVal}\n`;
+      }
+
+      await ctx.replyWithDocument(
+        { source: Buffer.from(content), filename: "env_backup.txt" },
+        { caption: "✅ <b>Configuration Exported</b>\n\nThis file contains all your current settings (both from .env and DB overrides). Keep it safe!", parse_mode: "HTML" }
+      );
+    } catch (err) {
+      logger.error("Error exporting configuration:", err);
+      await ctx.answerCbQuery("Failed to export config");
+      await ctx.reply("❌ Error exporting configuration. Check logs.");
+    }
+    return;
   }
 
   await ctx.answerCbQuery();
