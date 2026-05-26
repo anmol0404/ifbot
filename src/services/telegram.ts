@@ -245,33 +245,49 @@ class Telegram {
   }
 
   async getInviteLink(chatId: number) {
+    if (!chatId || isNaN(chatId)) {
+      return "";
+    }
     const cachedInviteLink = this.inviteLinks.get(chatId);
 
     if (cachedInviteLink) {
       return cachedInviteLink;
     }
-    const existingInviteLink = deunionize(await this.app.telegram.getChat(chatId)).invite_link;
+    try {
+      const existingInviteLink = deunionize(await this.app.telegram.getChat(chatId)).invite_link;
 
-    if (existingInviteLink) {
-      this.inviteLinks.set(chatId, existingInviteLink);
-      return existingInviteLink;
+      if (existingInviteLink) {
+        this.inviteLinks.set(chatId, existingInviteLink);
+        return existingInviteLink;
+      }
+      const inviteLink = await this.app.telegram.exportChatInviteLink(chatId);
+      this.inviteLinks.set(chatId, inviteLink);
+
+      return inviteLink;
+    } catch (error) {
+      logger.error(`Failed to get invite link for chat ${chatId}:`, error);
+      return "";
     }
-    const inviteLink = await this.app.telegram.exportChatInviteLink(chatId);
-    this.inviteLinks.set(chatId, inviteLink);
-
-    return inviteLink;
   }
 
   async getJoinRequestLink(chatId: number) {
+    if (!chatId || isNaN(chatId)) {
+      return "";
+    }
     const cached = this.joinRequestLinks.get(chatId);
     if (cached) return cached;
 
-    const link = await this.app.telegram.createChatInviteLink(chatId, {
-      creates_join_request: true,
-    });
+    try {
+      const link = await this.app.telegram.createChatInviteLink(chatId, {
+        creates_join_request: true,
+      });
 
-    this.joinRequestLinks.set(chatId, link.invite_link);
-    return link.invite_link;
+      this.joinRequestLinks.set(chatId, link.invite_link);
+      return link.invite_link;
+    } catch (error) {
+      logger.error(`Failed to get join request link for chat ${chatId}:`, error);
+      return "";
+    }
   }
 }
 const telegram = new Telegram();
