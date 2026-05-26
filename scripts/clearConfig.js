@@ -8,7 +8,6 @@ if (!databaseUrl) {
   process.exit(1);
 }
 
-// Define the schema inline to avoid esm/path resolution issues
 const ConfigVarSchema = new mongoose.Schema({
   key: { type: String, required: true, unique: true },
   encryptedValue: { type: String, required: true },
