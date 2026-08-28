@@ -104,7 +104,14 @@ class Telegram {
         }, delay);
     }
     async deleteWaitingMessage(chatId) {
-        await this.app.telegram.deleteMessage(chatId, this.waitingMessageId);
+        try {
+            if (isNaN(this.waitingMessageId))
+                return;
+            await this.app.telegram.deleteMessage(chatId, this.waitingMessageId);
+        }
+        catch (error) {
+            logger.warn(`Failed to delete waiting message in chat ${chatId}:`, error);
+        }
     }
     async sendForceJoinMessage(payload, chatId, user, chatsUserHasNotJoined) {
         const text = `Hello ${user.first_name}\n` + `you must join all the groups/channels below first`;
@@ -121,9 +128,11 @@ class Telegram {
             const inviteLink = useJoinRequest
                 ? await this.getJoinRequestLink(chatId)
                 : await this.getInviteLink(chatId);
+            if (!inviteLink)
+                return null;
             return Markup.button.url(label, inviteLink);
         });
-        const forceChatButtons = splitArray(rawButtons, limitPerRow);
+        const forceChatButtons = splitArray(rawButtons.filter((b) => b !== null), limitPerRow);
         forceChatButtons.push([
             Markup.button.url("Try again after join above chats", `https://t.me/${this.app.botInfo?.username}?start=${payload}`),
         ]);
@@ -198,17 +207,26 @@ class Telegram {
         return filterAsync(chatIds, async (chatId) => !(await this.alreadyJoinChat(chatId, userId)));
     }
     async alreadyJoinChat(chatId, userId) {
-        const { status } = await this.app.telegram.getChatMember(chatId, userId);
-        const isMember = (status === "administrator" ||
-            status === "creator" ||
-            status === "member" ||
-            status === "restricted");
-        if (isMember)
-            return true;
-        if (env.useJoinRequestForForceJoin) {
-            return await database.hasJoinRequest(userId, chatId);
+        try {
+            const { status } = await this.app.telegram.getChatMember(chatId, userId);
+            const isMember = (status === "administrator" ||
+                status === "creator" ||
+                status === "member" ||
+                status === "restricted");
+            if (isMember)
+                return true;
+            if (env.useJoinRequestForForceJoin) {
+                return await database.hasJoinRequest(userId, chatId);
+            }
+            return false;
         }
-        return false;
+        catch (error) {
+            logger.warn(`Failed to check membership for chat ${chatId}, user ${userId}:`, error);
+            if (env.useJoinRequestForForceJoin) {
+                return await database.hasJoinRequest(userId, chatId);
+            }
+            return false;
+        }
     }
     async getInviteLink(chatId) {
         if (!chatId || isNaN(chatId)) {

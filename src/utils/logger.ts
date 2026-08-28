@@ -5,20 +5,19 @@ const isDevelopment = env.development;
 
 const transports = [];
 
-if (isDevelopment) {
-  transports.push(
-    new winston.transports.Console({
-      level: "debug",
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple()
-      ),
-    })
-  );
-}
+transports.push(
+  new winston.transports.Console({
+    level: isDevelopment ? "debug" : "info",
+    format: winston.format.combine(
+      winston.format.timestamp(),
+      winston.format.errors({ stack: true }),
+      isDevelopment ? winston.format.simple() : winston.format.json()
+    ),
+  })
+);
 
 const logger = winston.createLogger({
-  level: isDevelopment ? "debug" : "silent", // disable logs in production
+  level: isDevelopment ? "debug" : "info",
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),

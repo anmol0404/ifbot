@@ -108,7 +108,12 @@ class Telegram {
   }
 
   async deleteWaitingMessage(chatId: number) {
-    await this.app.telegram.deleteMessage(chatId, this.waitingMessageId);
+    try {
+      if (isNaN(this.waitingMessageId)) return;
+      await this.app.telegram.deleteMessage(chatId, this.waitingMessageId);
+    } catch (error) {
+      logger.warn(`Failed to delete waiting message in chat ${chatId}:`, error);
+    }
   }
 
   async sendForceJoinMessage(
@@ -134,9 +139,15 @@ class Telegram {
         ? await this.getJoinRequestLink(chatId)
         : await this.getInviteLink(chatId);
 
+      if (!inviteLink) return null;
+
       return Markup.button.url(label, inviteLink);
     });
-    const forceChatButtons = splitArray(rawButtons, limitPerRow);
+
+    const forceChatButtons = splitArray(
+      rawButtons.filter((b): b is ReturnType<typeof Markup.button.url> => b !== null),
+      limitPerRow
+    );
 
     forceChatButtons.push([
       Markup.button.url(
@@ -226,22 +237,30 @@ class Telegram {
   }
 
   async alreadyJoinChat(chatId: number, userId: number) {
-    const { status } = await this.app.telegram.getChatMember(chatId, userId);
+    try {
+      const { status } = await this.app.telegram.getChatMember(chatId, userId);
 
-    const isMember = (
-      status === "administrator" ||
-      status === "creator" ||
-      status === "member" ||
-      status === "restricted"
-    );
+      const isMember = (
+        status === "administrator" ||
+        status === "creator" ||
+        status === "member" ||
+        status === "restricted"
+      );
 
-    if (isMember) return true;
+      if (isMember) return true;
 
-    if (env.useJoinRequestForForceJoin) {
-      return await database.hasJoinRequest(userId, chatId);
+      if (env.useJoinRequestForForceJoin) {
+        return await database.hasJoinRequest(userId, chatId);
+      }
+
+      return false;
+    } catch (error) {
+      logger.warn(`Failed to check membership for chat ${chatId}, user ${userId}:`, error);
+      if (env.useJoinRequestForForceJoin) {
+        return await database.hasJoinRequest(userId, chatId);
+      }
+      return false;
     }
-
-    return false;
   }
 
   async getInviteLink(chatId: number) {
