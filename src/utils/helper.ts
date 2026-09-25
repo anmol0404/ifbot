@@ -203,6 +203,10 @@ export function escapeMarkdownV2(text: string): string {
   // _ * [ ] ( ) ~ ` > # + - = | { } . !
   return text.replace(/([_\*\[\]\(\)~`>#+\-=|{}.!])/g, '\\$1');
 }
+const rawContact = env.premiumContact || "@ysylas";
+const contactUsername = rawContact.startsWith("@") ? rawContact : `@${rawContact.replace(/^https?:\/\/t\.me\//, "")}`;
+const contactLink = rawContact.startsWith("http") ? rawContact : `https://t.me/${rawContact.replace(/^@/, "")}`;
+
 export const premiumPlan = fmt`
 ✨ ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴs ✨
 
@@ -224,8 +228,7 @@ export const premiumPlan = fmt`
 🫳 ꜰᴜʟʟ ᴀᴅᴍɪɴ ꜱᴜᴘᴘᴏʀᴛ ꜰᴏʀ ǫᴜᴇʀɪᴇs & ʀᴇǫᴜᴇꜱᴛꜱ
 🫳 ᴅɪʀᴇᴄᴛ & ᴀᴅꜱ-ꜰʀᴇᴇ ᴀᴄᴄᴇꜱꜱ
 
-ᴘᴀʏᴍᴇɴᴛ ᴜᴘɪ: ${code(upiId)}
-ᴀꜰᴛᴇʀ ᴘᴀʏᴍᴇɴᴛ, ꜱᴇɴᴅ ꜱᴄʀᴇᴇɴꜱʜᴏᴛ ᴛᴏ: ${link(`${"Admin"}`, `tg://user?id=${env.adminIds[0]}`)}
+💬 ᴄᴏɴᴛᴀᴄᴛ ꜰᴏʀ ᴘʀᴇᴍɪᴜᴍ: ${link(contactUsername, contactLink)}
 `;
 
 export const developerInfo = `  

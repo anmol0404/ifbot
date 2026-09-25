@@ -50,6 +50,7 @@ export const CONFIG_VARS: ConfigVarDefinition[] = [
   { envKey: "BOT_USERNAME", envObjKey: "botUserName", displayName: "Bot Username", category: "text", type: "string", sensitive: false },
   { envKey: "JOIN", envObjKey: "join", displayName: "Join Message", category: "text", type: "string", sensitive: false },
   { envKey: "REQUEST", envObjKey: "request", displayName: "Request Message", category: "text", type: "string", sensitive: false },
+  { envKey: "PREMIUM_CONTACT", envObjKey: "premiumContact", displayName: "Premium Contact", category: "text", type: "string", sensitive: false },
 
   // AI
   { envKey: "AI_SERVER_URL", envObjKey: "aiServerUrl", displayName: "AI Server URL", category: "ai", type: "url", sensitive: false },

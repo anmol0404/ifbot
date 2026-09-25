@@ -18,6 +18,7 @@ declare const envObj: {
     port: string | number;
     channelSourceLink: string | undefined;
     premiumPlansLink: string | undefined;
+    premiumContact: string;
     join: string;
     howToGenerateToken: string | undefined;
     backup: string;

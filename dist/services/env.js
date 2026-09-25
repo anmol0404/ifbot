@@ -37,6 +37,7 @@ const jwtSecret = env.JWT_SECRET || "randomSecretString";
 const howToGenerateToken = env.HOW_TO_GENERATE_TOKEN;
 const botSupportLink = env.BOT_SUPPORT_LINK;
 const premiumPlansLink = env.PREMIUM_PLANS_LINK;
+const premiumContact = env.PREMIUM_CONTACT || "@ysylas";
 // GramJS (User API) Configuration
 const sessionId = env.SESSION_ID || "";
 const apiId = Number(env.API_ID) || 0;
@@ -77,6 +78,7 @@ const envObj = {
     port,
     channelSourceLink,
     premiumPlansLink,
+    premiumContact,
     join,
     howToGenerateToken,
     backup,
