@@ -126,15 +126,15 @@ export default {
                         const homeMessage = `👋 ʜᴇʟʟᴏ ${firstName}!
             ɪ ᴀᴍ ᴀ ᴘᴏᴡᴇʀꜰᴜʟ ʙᴏᴛ ᴛʜᴀᴛ ᴡᴏʀᴋs ɪɴ ɢʀᴏᴜᴘs. 
             ${escapeMarkdownV2(env.request)}\n`;
-                        const groupLink = await telegram
-                            .getInviteLink(env.allowGroups[0])
-                            .catch((error) => {
-                            logger.error("Error getting invite link:", error);
-                            return null;
-                        });
+                        const groupLink = env.requestLink
+                            ? env.requestLink
+                            : (await telegram.getInviteLink(env.allowGroups[0]).catch((error) => {
+                                logger.error("Error getting invite link:", error);
+                                return "";
+                            })) || "https://t.me/kdrama_cht";
                         const homeKeyboard = Markup.inlineKeyboard([
                             [
-                                Markup.button.url("📌 Send Your Request Name Here 📌", groupLink ?? "https://t.me/kdrama_cht"),
+                                Markup.button.url("📌 Send Your Request Name Here 📌", groupLink),
                             ],
                             [
                                 Markup.button.callback("🛠 ʜᴇʟᴘ", "features"),

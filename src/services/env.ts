@@ -3,6 +3,16 @@ import "dotenv/config";
 const env = process.env;
 const token = env.TELEGRAM_BOT_TOKEN;
 
+/** Parse a space-separated ID list from .env. Empty / unset -> [] (never [0]). */
+function parseIdList(raw: string | undefined): number[] {
+  const trimmed = (raw ?? "").trim();
+  if (!trimmed) return [];
+  return trimmed
+    .split(/\s+/)
+    .map(Number)
+    .filter((n: number) => !isNaN(n));
+}
+
 const dbAIOChannelId = Number(env.DB_AIO_CHANNEL_ID);
 const logGroupId = Number(env.LOG_GROUP_ID);
 const dbOngoingChannelId = Number(env.DB_ONGOING_CHANNEL_ID);
@@ -19,14 +29,15 @@ const howToDownload = env.HOW_TO_DOWNLOAD_MSG_LINK || "";
 const botUserName = env.BOT_USERNAME;
 const premium = env.PREMIUM;
 const port = env.PORT || 8080;
-const forceChannelIds = env.FORCE_CHANNEL_IDS?.split(" ").map(Number) || [];
-const forceGroupIds = env.FORCE_GROUP_IDS?.split(" ").map(Number) || [];
-const allowGroups = env.ALLOW_GROUPS?.split(" ").map(Number) || [];
-const withoutCmd = env.ALLOW_GROUPS_WITHOUT_COMMAND?.split(" ").map(Number) || [];
-const adminIds = env.ADMIN_IDS?.split(" ").map(Number);
+const forceChannelIds = parseIdList(env.FORCE_CHANNEL_IDS);
+const forceGroupIds = parseIdList(env.FORCE_GROUP_IDS);
+const allowGroups = parseIdList(env.ALLOW_GROUPS);
+const withoutCmd = parseIdList(env.ALLOW_GROUPS_WITHOUT_COMMAND);
+const adminIds = parseIdList(env.ADMIN_IDS);
 const ownerId = Number(env.OWNER_ID) || 0;
 const databaseUrl = env.DATABASE_URL;
 const join = env.JOIN || "";
+const requestLink = env.REQUEST_LINK || "";
 const backup = env.BACKUP || "";
 const request = env.REQUEST || "";
 const joinAnime = env.JOIN_ANIME || "";
@@ -63,7 +74,7 @@ if (!token) {
   throw Error("Provide TELEGRAM_BOT_TOKEN");
 }
 
-if (!adminIds) {
+if (adminIds.length === 0) {
   throw Error("Provide ADMIN_IDS");
 }
 
@@ -99,6 +110,7 @@ const envObj = {
   collectionOngoing,
   channelSource,
   request,
+  requestLink,
   forceChannelIds,
   allowGroups,
   withoutCmd,
@@ -123,7 +135,7 @@ const envObj = {
 export async function loadConfigFromDB(): Promise<void> {
   const { default: ConfigVarModel } = await import("../databases/models/configVarModel.js");
   const { decrypt } = await import("./encryption.js");
-  const { CONFIG_VARS } = await import("./configRegistry.js");
+  const { CONFIG_VARS, parseConfigValue } = await import("./configRegistry.js");
   const logger = (await import("../utils/logger.js")).default;
 
   try {
@@ -136,24 +148,7 @@ export async function loadConfigFromDB(): Promise<void> {
 
       try {
         const rawValue = decrypt(doc.encryptedValue);
-        let parsed: any;
-
-        switch (def.type) {
-          case "number[]":
-            parsed = rawValue.split(" ").map(Number).filter((n: number) => !isNaN(n));
-            break;
-          case "number":
-            parsed = Number(rawValue);
-            if (isNaN(parsed)) parsed = 0;
-            break;
-          case "boolean":
-            parsed = rawValue === "true" || rawValue === "1" || rawValue === "yes";
-            break;
-          default:
-            parsed = rawValue;
-        }
-
-        (envObj as any)[def.envObjKey] = parsed;
+        (envObj as any)[def.envObjKey] = parseConfigValue(def, rawValue);
       } catch (err) {
         logger.error(`Failed to decrypt config var ${doc.key}:`, err);
       }

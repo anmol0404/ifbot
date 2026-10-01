@@ -8,6 +8,8 @@ export interface ConfigVarDefinition {
   category: ConfigCategory;
   type: ConfigVarType;
   sensitive: boolean;
+  /** If true, the owner can wipe the value to empty from /config (persisted in DB). */
+  clearable?: boolean;
 }
 
 export const CONFIG_CATEGORIES: Record<ConfigCategory, { label: string; emoji: string }> = {
@@ -31,8 +33,8 @@ export const CONFIG_VARS: ConfigVarDefinition[] = [
   { envKey: "DB_AIO_CHANNEL_ID", envObjKey: "dbAIOChannelId", displayName: "DB AIO Channel", category: "channels", type: "number", sensitive: false },
   { envKey: "DB_ONGOING_CHANNEL_ID", envObjKey: "dbOngoingChannelId", displayName: "DB Ongoing Channel", category: "channels", type: "number", sensitive: false },
   { envKey: "DB_POSTER_ID", envObjKey: "dbPosterID", displayName: "DB Poster ID", category: "channels", type: "number", sensitive: false },
-  { envKey: "FORCE_CHANNEL_IDS", envObjKey: "forceChannelIds", displayName: "Force Channel IDs", category: "channels", type: "number[]", sensitive: false },
-  { envKey: "FORCE_GROUP_IDS", envObjKey: "forceGroupIds", displayName: "Force Group IDs", category: "channels", type: "number[]", sensitive: false },
+  { envKey: "FORCE_CHANNEL_IDS", envObjKey: "forceChannelIds", displayName: "Force Channel IDs", category: "channels", type: "number[]", sensitive: false, clearable: true },
+  { envKey: "FORCE_GROUP_IDS", envObjKey: "forceGroupIds", displayName: "Force Group IDs", category: "channels", type: "number[]", sensitive: false, clearable: true },
   { envKey: "LOG_GROUP_ID", envObjKey: "logGroupId", displayName: "Log Group", category: "channels", type: "number", sensitive: false },
   { envKey: "ONGOING_COLLECTION", envObjKey: "collectionOngoing", displayName: "Ongoing Collection", category: "channels", type: "number", sensitive: false },
   { envKey: "USE_JOIN_REQUEST_FOR_FORCE_JOIN", envObjKey: "useJoinRequestForForceJoin", displayName: "Join Request (Force Join)", category: "channels", type: "boolean", sensitive: false },
@@ -48,6 +50,7 @@ export const CONFIG_VARS: ConfigVarDefinition[] = [
 
   // Text
   { envKey: "BOT_USERNAME", envObjKey: "botUserName", displayName: "Bot Username", category: "text", type: "string", sensitive: false },
+  { envKey: "REQUEST_LINK", envObjKey: "requestLink", displayName: "Request Link", category: "text", type: "url", sensitive: false },
   { envKey: "JOIN", envObjKey: "join", displayName: "Join Message", category: "text", type: "string", sensitive: false },
   { envKey: "REQUEST", envObjKey: "request", displayName: "Request Message", category: "text", type: "string", sensitive: false },
   { envKey: "PREMIUM_CONTACT", envObjKey: "premiumContact", displayName: "Premium Contact", category: "text", type: "string", sensitive: false },
@@ -71,4 +74,31 @@ export function getConfigVarByEnvKey(key: string): ConfigVarDefinition | undefin
 
 export function getConfigVarsByCategory(category: ConfigCategory): ConfigVarDefinition[] {
   return CONFIG_VARS.filter((v) => v.category === category);
+}
+
+/**
+ * Parse a raw string into the runtime value for a config var type.
+ * Empty / whitespace-only input always yields an empty value, never [0].
+ */
+export function parseConfigValue(def: ConfigVarDefinition, raw: string | undefined | null): any {
+  const trimmed = (raw ?? "").trim();
+
+  switch (def.type) {
+    case "number[]": {
+      if (!trimmed) return [];
+      return trimmed
+        .split(/\s+/)
+        .map(Number)
+        .filter((n: number) => !isNaN(n));
+    }
+    case "number": {
+      if (!trimmed) return 0;
+      const n = Number(trimmed);
+      return isNaN(n) ? 0 : n;
+    }
+    case "boolean":
+      return trimmed === "true" || trimmed === "1" || trimmed === "yes";
+    default:
+      return trimmed;
+  }
 }

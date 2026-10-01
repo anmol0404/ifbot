@@ -31,6 +31,7 @@ declare const envObj: {
     collectionOngoing: string | number;
     channelSource: number;
     request: string;
+    requestLink: string;
     forceChannelIds: number[];
     allowGroups: number[];
     withoutCmd: number[];

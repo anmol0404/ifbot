@@ -3,7 +3,7 @@ import { Buffer } from "buffer";
 import database from "../../services/database.js";
 import env from "../../services/env.js";
 import { encrypt } from "../../services/encryption.js";
-import { CONFIG_CATEGORIES, CONFIG_VARS, getConfigVarByEnvKey, getConfigVarsByCategory, } from "../../services/configRegistry.js";
+import { CONFIG_CATEGORIES, CONFIG_VARS, getConfigVarByEnvKey, getConfigVarsByCategory, parseConfigValue, } from "../../services/configRegistry.js";
 import logger from "../../utils/logger.js";
 // In-memory cache of keys stored in DB - avoids repeated DB queries
 const dbKeysCache = new Set();
@@ -88,6 +88,9 @@ function buildVarDetailKeyboard(def) {
     const buttons = [
         [{ text: "✏️ Edit", callback_data: `cfg_edit_${def.envKey}` }],
     ];
+    if (def.clearable) {
+        buttons.push([{ text: "🗑 Clear (set empty)", callback_data: `cfg_clear_${def.envKey}` }]);
+    }
     if (fromDB) {
         buttons.push([{ text: "🔄 Reset to .env", callback_data: `cfg_reset_${def.envKey}` }]);
     }
@@ -95,32 +98,22 @@ function buildVarDetailKeyboard(def) {
     return { inline_keyboard: buttons };
 }
 function parseValue(def, raw) {
+    const trimmed = raw.trim();
+    if (!trimmed)
+        return { valid: true };
     if (def.type === "number") {
-        if (isNaN(Number(raw)))
+        if (isNaN(Number(trimmed)))
             return { valid: false, error: "Must be a number" };
     }
     else if (def.type === "number[]") {
-        const parts = raw.trim().split(/\s+/);
+        const parts = trimmed.split(/\s+/);
         if (parts.some((p) => isNaN(Number(p))))
             return { valid: false, error: "Must be space-separated numbers" };
     }
     return { valid: true };
 }
 function applyToEnv(def, raw) {
-    let parsed;
-    switch (def.type) {
-        case "number[]":
-            parsed = raw.trim().split(/\s+/).map(Number).filter((n) => !isNaN(n));
-            break;
-        case "number":
-            parsed = Number(raw);
-            if (isNaN(parsed))
-                parsed = 0;
-            break;
-        default:
-            parsed = raw;
-    }
-    env[def.envObjKey] = parsed;
+    env[def.envObjKey] = parseConfigValue(def, raw);
 }
 // Step 0: Show dashboard
 const showDashboard = Composer.on("message", async (ctx) => {
@@ -165,6 +158,32 @@ const waitStep = Composer.on("message", async (ctx) => {
         session.awaitingInput = false;
         session.editingKey = null;
         return ctx.reply("Unknown config key.");
+    }
+    const rawInput = msg.text.trim();
+    // Keywords that clear the value (only for clearable vars)
+    if (["clear", "none", "remove", "-", "off", "empty"].includes(rawInput.toLowerCase())) {
+        if (!def.clearable) {
+            return ctx.reply(`❌ <b>${def.displayName}</b> cannot be cleared.\n\nTry again or send /cancel`, { parse_mode: "HTML" });
+        }
+        try {
+            const encrypted = encrypt("");
+            await database.upsertConfigVar(def.envKey, encrypted, def.category, ctx.from.id);
+            dbKeysCache.add(def.envKey);
+            applyToEnv(def, "");
+            session.awaitingInput = false;
+            session.editingKey = null;
+            logger.info(`Config var ${def.envKey} cleared by ${ctx.from.id}`);
+            const text = buildVarDetailText(def);
+            const keyboard = buildVarDetailKeyboard(def);
+            return ctx.reply(`🗑 <b>${def.displayName}</b> cleared.\n\n` + text, {
+                parse_mode: "HTML",
+                reply_markup: keyboard,
+            });
+        }
+        catch (err) {
+            logger.error(`Error clearing config var ${def.envKey}:`, err);
+            return ctx.reply("❌ Failed to clear. Try again or send /cancel");
+        }
     }
     const validation = parseValue(def, msg.text);
     if (!validation.valid) {
@@ -261,12 +280,61 @@ configDashboard.on("callback_query", async (ctx) => {
         if (def.type === "number[]") {
             prompt += "\n\n💡 <i>Send space-separated numbers</i>";
         }
+        if (def.clearable) {
+            prompt += "\n\n🗑 <i>Send <code>clear</code> to remove the value completely</i>";
+        }
         return safeEditMessage(ctx, prompt, {
             parse_mode: "HTML",
             reply_markup: {
                 inline_keyboard: [[{ text: "❌ Cancel", callback_data: `cfg_var_${envKey}` }]],
             },
         });
+    }
+    // Clear to empty (persisted in DB so it survives restarts)
+    if (data.startsWith("cfg_clear_")) {
+        const envKey = data.replace("cfg_clear_", "");
+        const def = getConfigVarByEnvKey(envKey);
+        if (!def || !def.clearable)
+            return ctx.answerCbQuery("Cannot clear this variable");
+        const current = env[def.envObjKey];
+        const currentText = Array.isArray(current) ? current.join(" ") || "(empty)" : String(current ?? "(not set)");
+        await ctx.answerCbQuery();
+        return safeEditMessage(ctx, `🗑 <b>Clear ${def.displayName}?</b>\n\n` +
+            `Current: <code>${currentText}</code>\n\n` +
+            `⚠️ This sets the value to <b>empty</b> and saves it in the database, so it stays empty even after a restart. ` +
+            `Use "🔄 Reset to .env" to bring the .env value back.`, {
+            parse_mode: "HTML",
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        { text: "✅ Yes, clear it", callback_data: `cfg_clear_do_${envKey}` },
+                        { text: "❌ Cancel", callback_data: `cfg_var_${envKey}` },
+                    ],
+                ],
+            },
+        });
+    }
+    if (data.startsWith("cfg_clear_do_")) {
+        const envKey = data.replace("cfg_clear_do_", "");
+        const def = getConfigVarByEnvKey(envKey);
+        if (!def || !def.clearable)
+            return ctx.answerCbQuery("Cannot clear this variable");
+        try {
+            const encrypted = encrypt("");
+            await database.upsertConfigVar(def.envKey, encrypted, def.category, ctx.from.id);
+            dbKeysCache.add(def.envKey);
+            applyToEnv(def, "");
+            logger.info(`Config var ${def.envKey} cleared by ${ctx.from.id}`);
+            await ctx.answerCbQuery("Cleared");
+            return safeEditMessage(ctx, `🗑 <b>${def.displayName}</b> cleared.\n\n` + buildVarDetailText(def), {
+                parse_mode: "HTML",
+                reply_markup: buildVarDetailKeyboard(def),
+            });
+        }
+        catch (err) {
+            logger.error(`Error clearing config var ${envKey}:`, err);
+            return ctx.answerCbQuery("Failed to clear");
+        }
     }
     // Reset
     if (data.startsWith("cfg_reset_")) {
@@ -278,19 +346,7 @@ configDashboard.on("callback_query", async (ctx) => {
             await database.deleteConfigVar(envKey);
             dbKeysCache.delete(envKey);
             // Restore from process.env
-            const rawEnvVal = process.env[envKey] || "";
-            let parsed;
-            switch (def.type) {
-                case "number[]":
-                    parsed = rawEnvVal ? rawEnvVal.split(" ").map(Number) : [];
-                    break;
-                case "number":
-                    parsed = Number(rawEnvVal) || 0;
-                    break;
-                default:
-                    parsed = rawEnvVal;
-            }
-            env[def.envObjKey] = parsed;
+            env[def.envObjKey] = parseConfigValue(def, process.env[envKey] || "");
             await ctx.answerCbQuery("Reset to .env value");
             const text = buildVarDetailText(def);
             const keyboard = buildVarDetailKeyboard(def);

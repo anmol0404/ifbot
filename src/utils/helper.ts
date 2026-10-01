@@ -5,6 +5,7 @@ import telegram from "../services/telegram.js";
 import { fmt, code, link } from "telegraf/format";
 import { isValidUrl } from "../extra/validation.js";
 import { Markup } from "telegraf";
+import logger from "./logger.js";
 
 const upiId = env.upiId || "yourupi@bank";
 
@@ -70,9 +71,12 @@ export async function sendWelcomeMessage(
 ɪ ᴀᴍ ᴀ ᴘᴏᴡᴇʀꜰᴜʟ ʙᴏᴛ ᴛʜᴀᴛ ᴡᴏʀᴋs ɪɴ ɢʀᴏᴜᴘs. 
 ${escapeMarkdownV2(env.request)}\n
 `;
-  const groupLink = await telegram
-    .getInviteLink(env.allowGroups[0])
-    .catch((error) => console.log(error));
+  const groupLink = env.requestLink
+    ? env.requestLink
+    : await telegram.getInviteLink(env.allowGroups[0]).catch((error) => {
+        logger.error("Error getting invite link:", error);
+        return "";
+      });
   const keyboard = Markup.inlineKeyboard([
     [
       Markup.button.url(
